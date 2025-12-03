@@ -212,5 +212,5 @@
 
 /* Remove marker dots from list items */
 ::marker {
-  content: none
+  content: none;
 }
