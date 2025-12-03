@@ -12,13 +12,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { authClient } from "@/lib/auth-client";
 
-interface UpdradeModalProps {
+interface UpgradeModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
 export const UpgradeModal = ({open,onOpenChange}:
-    UpdradeModalProps) => {
+    UpgradeModalProps) => {
         return (
             <AlertDialog open={open} onOpenChange={onOpenChange}>
                 <AlertDialogContent>
