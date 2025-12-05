@@ -18,7 +18,6 @@ export const useSuspenseWorkflows = () => {
  */
 export const useCreateWorkflow = () => {
     const trpc = useTRPC();
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     return useMutation(
@@ -37,3 +36,27 @@ export const useCreateWorkflow = () => {
     );
 
 };
+
+/**
+ * Hook to Remove a workflow
+ */
+
+export const useRemoveWorkflow = () => {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    return useMutation(
+        trpc.workflows.remove.mutationOptions({
+            onSuccess: (data) =>{
+                toast.success(`Workflow "${data.name}" removed`);
+                queryClient.invalidateQueries(
+                    trpc.workflows.getMany.queryOptions({}),
+                );
+                queryClient.invalidateQueries(
+                    trpc.workflows.getOne.queryOptions({id: data.id}),
+                );
+            }
+        }
+    )
+    );
+}
