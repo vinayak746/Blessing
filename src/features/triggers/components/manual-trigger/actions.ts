@@ -9,7 +9,7 @@ export type ManualTriggerToken =Realtime.Token<
     ["status"]
     >;
 
-export async function fetchManualTriggerRealtimeToken(): Promise<HttpRequestToken> {
+export async function fetchManualTriggerRealtimeToken(): Promise<ManualTriggerToken> {
     const token = await getSubscriptionToken(inngest, {
         channel: manualTriggerChannel(),
         topics: ["status"],
