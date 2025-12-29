@@ -214,3 +214,9 @@
 ::marker {
   content: none;
 }
+
+/* Show markers for ordered lists */
+ol li::marker {
+  content: counter(list-item) ". ";
+  display: block;
+}
