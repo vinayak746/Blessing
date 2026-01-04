@@ -83,11 +83,17 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      name: "",
-      type: CredentialType.OPENAI,
-      value: "",
-    },
+    defaultValues: initialData
+      ? {
+          name: initialData.name || "",
+          type: (initialData.type as CredentialType) || CredentialType.OPENAI,
+          value: initialData.value || "",
+        }
+      : {
+          name: "",
+          type: CredentialType.OPENAI,
+          value: "",
+        },
   });
   const onSubmit = async (values: FormValues) => {
     if (isEdit && initialData?.id) {
@@ -97,8 +103,8 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
       });
     } else {
       await createCredential.mutateAsync(values, {
-        onSuccess:(data) =>{
-            router.push(`/credentials/${data.id}`);
+        onSuccess: (data) => {
+          router.push(`/credentials/${data.id}`);
         },
         onError: (error) => {
           handleError(error);
@@ -137,40 +143,39 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
               <FormField
                 control={form.control}
                 name="type"
-                render = {({ field }) => (
-                    <FormItem>
-                        <FormLabel>Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          >
-                            <FormControl>
-                                <SelectTrigger className = "w-full">
-                                <SelectValue />
-                                </SelectTrigger>
-                            
-                            </FormControl>
-                        <SelectContent>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
                         {credentialTypeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            <div className = "flex items-center gap-2">
-                                <Image 
+                            <div className="flex items-center gap-2">
+                              <Image
                                 src={option.logos}
                                 alt={option.label}
                                 width={20}
                                 height={20}
-                                />
-                                {option.label}
+                              />
+                              {option.label}
                             </div>
                           </SelectItem>
                         ))}
-                        </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                />
-                <FormField
+              />
+              <FormField
                 control={form.control}
                 name="value"
                 render={({ field }) => (
@@ -184,27 +189,20 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                 )}
               />
 
-
-              <div className = "flex gap-4">
-                    <Button
-                    type="submit"
-                    disabled={
-                        createCredential.isLoading || updateCredential.isLoading
-                    }
-                    >
-                    
-                    {isEdit?"Update":"Create"}
-                    </Button>
-                    <Button
-                    type="button"
-                    variant="outline"
-                    asChild
-                    >
-                    <Link href = "/credentials" prefetch>
-
-                        Cancel
-                    </Link>
-                    </Button>
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  disabled={
+                    createCredential.isPending || updateCredential.isPending
+                  }
+                >
+                  {isEdit ? "Update" : "Create"}
+                </Button>
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/credentials" prefetch>
+                    Cancel
+                  </Link>
+                </Button>
               </div>
             </form>
           </Form>
@@ -214,11 +212,8 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
   );
 };
 
-export const CredentialView = ({
-  credentialId,
-}:{credentialId: string})=>{
-  
+export const CredentialView = ({ credentialId }: { credentialId: string }) => {
   const { data: credential } = useSuspenseCredential(credentialId);
 
-  return <CredentialForm initialData={credential} />
-}
+  return <CredentialForm initialData={credential} />;
+};
