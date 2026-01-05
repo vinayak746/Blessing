@@ -1,5 +1,5 @@
 "use client";
-import { ExecutionStatus } from "@/generated/prisma/enums";
+import { ExecutionStatus } from "@prisma/client";
 import {
   CheckCircle2Icon,
   XCircleIcon,

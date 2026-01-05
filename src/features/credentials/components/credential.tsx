@@ -9,7 +9,7 @@ import {
 } from "../hooks/use-credentials";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { useForm } from "react-hook-form";
-import { CredentialType } from "@/generated/prisma/enums";
+import { CredentialType } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import {

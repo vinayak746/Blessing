@@ -33,7 +33,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
-import { CredentialType } from "@/generated/prisma/enums";
+import { CredentialType } from "@prisma/client";
 
 const formSchema = z.object({
   variableName: z

@@ -2,7 +2,7 @@ import { InitialNode } from "@/components/initial-node";
 import { HttpRequestNode } from "@/features/executions/components/http-request/node";
 import { ManualTriggerNode } from "@/features/triggers/components/manual-trigger/node";
 import { GoogleFormTrigger } from "@/features/triggers/components/google-form-trigger/node";
-import { NodeType } from "@/generated/prisma/enums";
+import { NodeType } from "@prisma/client";
 import type { NodeTypes } from "@xyflow/react";
 import { StripeTriggerNode } from "@/features/triggers/components/stripe-trigger/node";
 import { GeminiNode } from "@/features/executions/components/gemini/node";
