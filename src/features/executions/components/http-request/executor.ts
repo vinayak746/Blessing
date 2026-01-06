@@ -73,11 +73,18 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       const options: KyOptions = { method };
 
       if (["POST", "PUT", "PATCH"].includes(method)) {
-        const resolved = Handlebars.compile(data.body || "{}")(context);
-        JSON.parse(resolved);
+        const resolved = Handlebars.compile(data.body || "")(context);
+
+        let isJson = true;
+        try {
+          JSON.parse(resolved);
+        } catch {
+          isJson = false;
+        }
+
         options.body = resolved;
         options.headers = {
-          "Content-Type": "application/json",
+          "Content-Type": isJson ? "application/json" : "text/plain",
         };
       }
 
