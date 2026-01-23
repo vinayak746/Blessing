@@ -1,12 +1,12 @@
 "use client";
 import { ExecutionStatus } from "@prisma/client";
+import { formatDistanceToNow } from "date-fns";
 import {
   CheckCircle2Icon,
-  XCircleIcon,
-  Loader2Icon,
   ClockIcon,
+  Loader2Icon,
+  XCircleIcon,
 } from "lucide-react";
-import { FormatDistanceFn, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,12 @@ const formatStatus = (status: ExecutionStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
+const formatOutput = (output: unknown): string => {
+  const jsonString = JSON.stringify(output, null, 2);
+  // Replace escaped newlines with actual newlines
+  return jsonString.replace(/\\n/g, "\n");
+};
+
 export const ExecutionView = ({ executionId }: { executionId: string }) => {
   const { data: execution } = useSuspenseExecution(executionId);
   const [showStackTrace, setShowStackTrace] = useState(false);
@@ -48,7 +54,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
     ? Math.round(
         (new Date(execution.completedAt).getTime() -
           new Date(execution.startedAt).getTime()) /
-          1000
+          1000,
       )
     : null;
 
@@ -149,12 +155,12 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </div>
         )}
         {execution.output && (
-            <div className="mt-6 p-4 bg-muted rounded-md">
-                <p className="text-sm font-medium mb-2">Output</p>
-                <pre className="text-xs font-mono overflow-auto">
-                {JSON.stringify(execution.output, null, 2)}
-                </pre>
-            </div>
+          <div className="mt-6 p-4 bg-muted rounded-md">
+            <p className="text-sm font-medium mb-2">Output</p>
+            <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap">
+              {formatOutput(execution.output)}
+            </pre>
+          </div>
         )}
       </CardContent>
     </Card>
