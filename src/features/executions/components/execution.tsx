@@ -24,6 +24,14 @@ import {
 } from "@/components/ui/collapsible";
 import { useSuspenseExecution } from "../hooks/use-executions";
 
+// Helper function to format output with proper newlines
+const formatOutput = (output: unknown): string => {
+  const formatted = JSON.stringify(output, null, 2);
+  // Replace escaped newlines within string values with actual newlines
+  // This regex matches \n inside JSON string values
+  return formatted.replace(/\\n/g, '\n');
+};
+
 const getStatusIcon = (status: ExecutionStatus) => {
   switch (status) {
     case ExecutionStatus.SUCCESS:
@@ -54,6 +62,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
 
   return (
     <Card className="shadow-none">
+      {/* ... rest of the component stays the same until line 151 ... */}
       <CardHeader>
         <div className="flex items-center gap-3">
           {getStatusIcon(execution.status)}
@@ -151,8 +160,8 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
         {execution.output && (
             <div className="mt-6 p-4 bg-muted rounded-md">
                 <p className="text-sm font-medium mb-2">Output</p>
-                <pre className="text-xs font-mono overflow-auto">
-                {JSON.stringify(execution.output, null, 2)}
+                <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap">
+                  {formatOutput(execution.output)}
                 </pre>
             </div>
         )}

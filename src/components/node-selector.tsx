@@ -84,6 +84,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Send a message to Slack",
     icon: "/logos/slack.svg",
   },
+  {
+    type: NodeType.WHATSAPP,
+    label: "WhatsApp",
+    description: "Send a message to WhatsApp",
+    icon: "/logos/whatsapp.svg", // Add WhatsApp logo to public/logos/
+  },
 ];
 
 interface NodeSelectorProps {

@@ -10,6 +10,7 @@ import { OpenAiNode } from "@/features/executions/components/openai/node";
 import { AnthropicNode } from "@/features/executions/components/anthropic/node";
 import { DiscordNode } from "@/features/executions/components/discord/node";
 import { SlackNode } from "@/features/executions/components/slack/node";
+import { WhatsAppNode } from "@/features/executions/components/whatsapp/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -22,6 +23,7 @@ export const nodeComponents = {
   [NodeType.ANTHROPIC]: AnthropicNode,
   [NodeType.DISCORD]: DiscordNode,
   [NodeType.SLACK]: SlackNode,
+  [NodeType.WHATSAPP]: WhatsAppNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;
