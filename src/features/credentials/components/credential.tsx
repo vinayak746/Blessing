@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,12 +37,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 
+// Use z.nativeEnum for Prisma enums (NOT z.enum)
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(CredentialType),
-  value: z.string().min(1, "API is required"),
+  type: z.nativeEnum(CredentialType),
+  value: z.string().min(1, "API Key is required"),
+  phoneNumberId: z.string().optional(),
+}).refine((data) => {
+  if (data.type === CredentialType.WHATSAPP) {
+    return !!data.phoneNumberId && data.phoneNumberId.length > 0;
+  }
+  return true;
+}, {
+  message: "Phone Number ID is required for WhatsApp",
+  path: ["phoneNumberId"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -50,17 +62,22 @@ const credentialTypeOptions = [
   {
     value: CredentialType.OPENAI,
     label: "OpenAI",
-    logos: "/logos/openai.svg",
+    logo: "/logos/openai.svg",
   },
   {
     value: CredentialType.GEMINI,
     label: "Gemini",
-    logos: "/logos/gemini.svg",
+    logo: "/logos/gemini.svg",
   },
   {
     value: CredentialType.ANTHROPIC,
     label: "Anthropic",
-    logos: "/logos/anthropic.svg",
+    logo: "/logos/anthropic.svg",
+  },
+  {
+    value: CredentialType.WHATSAPP,
+    label: "WhatsApp",
+    logo: "/logos/whatsapp.svg",
   },
 ];
 
@@ -81,28 +98,56 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
 
   const isEdit = !!initialData?.id;
 
+  // Parse WhatsApp credential if editing
+  let initialPhoneNumberId = "";
+  let initialValue = initialData?.value || "";
+  
+  if (initialData?.type === CredentialType.WHATSAPP && initialData?.value?.includes(":")) {
+    const [phoneId, token] = initialData.value.split(":");
+    initialPhoneNumberId = phoneId;
+    initialValue = token;
+  }
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
           name: initialData.name || "",
           type: (initialData.type as CredentialType) || CredentialType.OPENAI,
-          value: initialData.value || "",
+          value: initialValue,
+          phoneNumberId: initialPhoneNumberId,
         }
       : {
           name: "",
           type: CredentialType.OPENAI,
           value: "",
+          phoneNumberId: "",
         },
   });
+
+  const watchType = form.watch("type");
+  const isWhatsApp = watchType === CredentialType.WHATSAPP;
+
   const onSubmit = async (values: FormValues) => {
+    // For WhatsApp, combine phoneNumberId and access token
+    let finalValue = values.value;
+    if (values.type === CredentialType.WHATSAPP && values.phoneNumberId) {
+      finalValue = `${values.phoneNumberId}:${values.value}`;
+    }
+
+    const submitData = {
+      name: values.name,
+      type: values.type,
+      value: finalValue,
+    };
+
     if (isEdit && initialData?.id) {
       await updateCredential.mutateAsync({
         id: initialData.id,
-        ...values,
+        ...submitData,
       });
     } else {
-      await createCredential.mutateAsync(values, {
+      await createCredential.mutateAsync(submitData, {
         onSuccess: (data) => {
           router.push(`/credentials/${data.id}`);
         },
@@ -112,6 +157,7 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
       });
     }
   };
+
   return (
     <>
       {modal}
@@ -160,7 +206,7 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                           <SelectItem key={option.value} value={option.value}>
                             <div className="flex items-center gap-2">
                               <Image
-                                src={option.logos}
+                                src={option.logo}
                                 alt={option.label}
                                 width={20}
                                 height={20}
@@ -175,15 +221,77 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                   </FormItem>
                 )}
               />
+
+              {/* WhatsApp Setup Instructions */}
+              {isWhatsApp && (
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
+                  <div className="text-sm font-medium">
+                    How to get WhatsApp Business API credentials
+                  </div>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://developers.facebook.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline inline-flex items-center gap-1"
+                      >
+                        Meta for Developers
+                        <ExternalLinkIcon className="h-3 w-3" />
+                      </a>
+                    </li>
+                    <li>Create a new app → Select "Business" type</li>
+                    <li>Add "WhatsApp" product to your app</li>
+                    <li>Go to WhatsApp → API Setup</li>
+                    <li>Copy <strong>Phone Number ID</strong> from "From" section</li>
+                    <li>Click <strong>Generate</strong> for temporary token (24hrs) or create System User for permanent token</li>
+                    <li>Add test numbers in "To" section for sandbox mode</li>
+                  </ol>
+                  <div className="text-xs text-muted-foreground border-t pt-2 mt-2">
+                    ⚠️ In sandbox mode, you can only message numbers you've added as test recipients.
+                  </div>
+                </div>
+              )}
+
+              {/* WhatsApp Phone Number ID Field */}
+              {isWhatsApp && (
+                <FormField
+                  control={form.control}
+                  name="phoneNumberId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="123456789012345" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Your WhatsApp Business Phone Number ID (found in API Setup)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>API Key</FormLabel>
+                    <FormLabel>{isWhatsApp ? "Access Token" : "API Key"}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="sk-..." {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder={isWhatsApp ? "EAAxxxxxxx..." : "sk-..."} 
+                        {...field} 
+                      />
                     </FormControl>
+                    {isWhatsApp && (
+                      <FormDescription>
+                        Generate this in Meta Developer Portal → WhatsApp → API Setup
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
