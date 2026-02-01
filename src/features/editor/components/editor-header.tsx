@@ -25,19 +25,26 @@ export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
   const editor = useAtomValue(editorAtom);
   const saveWorkflow = useUpdateWorkflow();
   
-  const handleSave = ()=>{
-    if(!editor) return;
+  const handleSave = () => {
+    if (!editor) return;
 
     const nodes = editor.getNodes();
     const edges = editor.getEdges();
 
-    saveWorkflow.mutate({id: workflowId, nodes, edges});
-  }
+    saveWorkflow.mutate({ id: workflowId, nodes, edges });
+  };
+  
   return (
-    <div className="ml-auto">
-      <Button size="sm" onClick={handleSave} disabled={saveWorkflow.isPending}>
+    <div className="ml-auto flex items-center gap-3">
+      <Button 
+        size="sm" 
+        variant="outline"
+        onClick={handleSave} 
+        disabled={saveWorkflow.isPending}
+        title="Force save (Auto-save is enabled)"
+      >
         <SaveIcon className="size-4" />
-        Save
+        {saveWorkflow.isPending ? "Saving..." : "Save"}
       </Button>
     </div>
   );

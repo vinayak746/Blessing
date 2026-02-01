@@ -2,8 +2,8 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MousePointerIcon } from "lucide-react";
-import { useCallback } from "react";
+import { GlobeIcon, MousePointerIcon, SearchIcon, XIcon } from "lucide-react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 import { NodeType } from "@prisma/client";
 import { Separator } from "./ui/separator";
 
@@ -104,6 +105,42 @@ export function NodeSelector({
   children,
 }: NodeSelectorProps) {
   const { setNodes, getNodes, screenToFlowPosition } = useReactFlow();
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus search input when sheet opens
+  useEffect(() => {
+    if (open) {
+      setSearchQuery("");
+      // Small delay to ensure sheet is mounted
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [open]);
+
+  // Filter nodes based on search query
+  const filteredTriggerNodes = useMemo(() => {
+    if (!searchQuery.trim()) return triggerNodes;
+    const query = searchQuery.toLowerCase();
+    return triggerNodes.filter(
+      (node) =>
+        node.label.toLowerCase().includes(query) ||
+        node.description.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
+  const filteredExecutionNodes = useMemo(() => {
+    if (!searchQuery.trim()) return executionNodes;
+    const query = searchQuery.toLowerCase();
+    return executionNodes.filter(
+      (node) =>
+        node.label.toLowerCase().includes(query) ||
+        node.description.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
+  const hasResults = filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0;
 
   const handleNodeSelect = useCallback(
     (selection: NodeTypeOption) => {
@@ -148,83 +185,134 @@ export function NodeSelector({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>What triggers this workflow?</SheetTitle>
-          <SheetDescription>
-            A trigger is a step that starts the workflow.
-          </SheetDescription>
-        </SheetHeader>
-        <div>
-          {triggerNodes.map((nodeType) => {
-            const Icon = nodeType.icon;
-            return (
-              <div
-                key={nodeType.type}
-                className="w-full justify-start h-auto py-5 px-4 
-                   rounded-none cursor-pointer border-l-2
-                   border-transparent hover:border-l-primary"
-                onClick={() => handleNodeSelect(nodeType)}
-              >
-                <div className="flex items-center gap-6 w-full overflow-hidden">
-                  {typeof Icon === "string" ? (
-                    <img
-                      src={Icon}
-                      alt={nodeType.label}
-                      className="size-5 object-contain rounded-sm"
-                    />
-                  ) : (
-                    <Icon className="size-5" />
-                  )}
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <div className="p-6 pb-0">
+          <SheetHeader>
+            <SheetTitle>Add a Node</SheetTitle>
+            <SheetDescription>
+              Choose a trigger or action to add to your workflow
+            </SheetDescription>
+          </SheetHeader>
 
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-medium text-sm">
-                      {nodeType.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {nodeType.description}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {/* Search Input */}
+          <div className="relative mt-4">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              ref={searchInputRef}
+              placeholder="Search nodes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9 h-10 bg-muted/50 border-muted-foreground/20"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <XIcon className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
-        <div>
-          <Separator className="my-4" />
-          {executionNodes.map((nodeType) => {
-            const Icon = nodeType.icon;
-            return (
-              <div
-                key={nodeType.type}
-                className="w-full justify-start h-auto py-5 px-4 
-                   rounded-none cursor-pointer border-l-2
-                   border-transparent hover:border-l-primary"
-                onClick={() => handleNodeSelect(nodeType)}
-              >
-                <div className="flex items-center gap-6 w-full overflow-hidden">
-                  {typeof Icon === "string" ? (
-                    <img
-                      src={Icon}
-                      alt={nodeType.label}
-                      className="size-5 object-contain rounded-sm"
-                    />
-                  ) : (
-                    <Icon className="size-5" />
-                  )}
 
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-medium text-sm">
-                      {nodeType.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {nodeType.description}
-                    </span>
-                  </div>
-                </div>
+        <div className="flex-1 overflow-y-auto px-2 py-4">
+          {!hasResults && (
+            <div className="py-12 text-center">
+              <SearchIcon className="size-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No nodes found for "{searchQuery}"</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Try a different search term</p>
+            </div>
+          )}
+
+          {filteredTriggerNodes.length > 0 && (
+            <div className="mb-4">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
+                Triggers
+              </p>
+              <div className="space-y-1">
+                {filteredTriggerNodes.map((nodeType) => {
+                  const Icon = nodeType.icon;
+                  return (
+                    <div
+                      key={nodeType.type}
+                      className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
+                        hover:bg-accent transition-all duration-150"
+                      onClick={() => handleNodeSelect(nodeType)}
+                    >
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
+                        {typeof Icon === "string" ? (
+                          <img
+                            src={Icon}
+                            alt={nodeType.label}
+                            className="size-5 object-contain"
+                          />
+                        ) : (
+                          <Icon className="size-5 text-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {nodeType.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {nodeType.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          )}
+
+          {filteredExecutionNodes.length > 0 && (
+            <div>
+              {filteredTriggerNodes.length > 0 && <Separator className="my-4" />}
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
+                Actions
+              </p>
+              <div className="space-y-1">
+                {filteredExecutionNodes.map((nodeType) => {
+                  const Icon = nodeType.icon;
+                  return (
+                    <div
+                      key={nodeType.type}
+                      className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
+                        hover:bg-accent transition-all duration-150"
+                      onClick={() => handleNodeSelect(nodeType)}
+                    >
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
+                        {typeof Icon === "string" ? (
+                          <img
+                            src={Icon}
+                            alt={nodeType.label}
+                            className="size-5 object-contain"
+                          />
+                        ) : (
+                          <Icon className="size-5 text-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {nodeType.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {nodeType.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer hint */}
+        <div className="p-4 border-t bg-muted/30">
+          <p className="text-xs text-muted-foreground text-center">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-mono">⇧A</kbd> to open this panel
+          </p>
         </div>
       </SheetContent>
     </Sheet>

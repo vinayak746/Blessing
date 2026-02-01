@@ -95,14 +95,18 @@ export const useUpdateWorkflowName = () => {
  * Hook to update workflow
  */
 
-export const useUpdateWorkflow = () => {
+export const useUpdateWorkflow = (options?: { silent?: boolean }) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const silent = options?.silent ?? false;
 
   return useMutation(
     trpc.workflows.update.mutationOptions({
       onSuccess: (data) => {
-        toast.success(`Workflow "${data.name}" saved`);
+        // Only show toast if not silent
+        if (!silent) {
+          toast.success(`Workflow "${data.name}" saved`);
+        }
 
         queryClient.invalidateQueries(trpc.workflows.getMany.queryOptions({}));
         queryClient.invalidateQueries(
@@ -110,6 +114,7 @@ export const useUpdateWorkflow = () => {
         );
       },
       onError: (error) => {
+        // Always show error toast
         toast.error(`Failed to save workflow: ${error.message}`);
       },
     })

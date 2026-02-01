@@ -18,6 +18,7 @@ import { useExecutionsParams } from "../hooks/use-executions-params";
 import type {  Execution } from "@prisma/client";
 import { ExecutionStatus } from "@prisma/client";
 import { CheckCircle2Icon, XCircleIcon, Loader2Icon, ClockIcon } from "lucide-react";
+import { EntityListSkeleton } from "@/components/skeletons";
 
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
@@ -74,7 +75,7 @@ export const ExecutionsContainer = ({
 };
 
 export const ExecutionsLoading = () => {
-  return <LoadingView message="Loading Executions..." />;
+  return <EntityListSkeleton count={5} />;
 };
 
 export const ExecutionsError = () => {

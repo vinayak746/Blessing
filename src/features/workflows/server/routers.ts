@@ -12,6 +12,53 @@ import { NodeType } from "@prisma/client";
 import { inngest } from "@/inngest/client";
 import { sendWorkflowExecution } from "@/inngest/utils";
 
+// Template configurations with pre-built nodes and connections
+const workflowTemplates = {
+  blank: {
+    name: null, // Will use generated slug
+    nodes: [{ type: NodeType.INITIAL, position: { x: 0, y: 0 } }],
+    connections: [],
+  },
+  "form-to-slack": {
+    name: "Form to Slack",
+    nodes: [
+      { type: NodeType.GOOGLE_FORM_TRIGGER, position: { x: 0, y: 0 } },
+      { type: NodeType.SLACK, position: { x: 300, y: 0 } },
+    ],
+    connections: [{ fromIndex: 0, toIndex: 1 }],
+  },
+  "form-to-ai-summary": {
+    name: "AI Form Summarizer",
+    nodes: [
+      { type: NodeType.GOOGLE_FORM_TRIGGER, position: { x: 0, y: 0 } },
+      { type: NodeType.OPENAI, position: { x: 300, y: 0 } },
+      { type: NodeType.DISCORD, position: { x: 600, y: 0 } },
+    ],
+    connections: [
+      { fromIndex: 0, toIndex: 1 },
+      { fromIndex: 1, toIndex: 2 },
+    ],
+  },
+  "payment-notification": {
+    name: "Payment Notifications",
+    nodes: [
+      { type: NodeType.STRIPE_TRIGGER, position: { x: 0, y: 0 } },
+      { type: NodeType.SLACK, position: { x: 300, y: 0 } },
+    ],
+    connections: [{ fromIndex: 0, toIndex: 1 }],
+  },
+  "webhook-processor": {
+    name: "Webhook Processor",
+    nodes: [
+      { type: NodeType.MANUAL_TRIGGER, position: { x: 0, y: 0 } },
+      { type: NodeType.OPENAI, position: { x: 300, y: 0 } },
+    ],
+    connections: [{ fromIndex: 0, toIndex: 1 }],
+  },
+} as const;
+
+type TemplateId = keyof typeof workflowTemplates;
+
 export const workflowsRouter = createTRPCRouter({
   
   execute: protectedProcedure
@@ -27,21 +74,49 @@ export const workflowsRouter = createTRPCRouter({
       return workflow;
     }),
 
-  create: premiumProcedure.mutation(({ ctx }) => {
-    return prisma.workflow.create({
-      data: {
-        name: generateSlug(3),
-        userId: ctx.auth.user.id,
-        nodes: {
-          create: {
-            type: NodeType.INITIAL,
-            position: { x: 0, y: 0 },
-            name: NodeType.INITIAL,
-          },
+  create: premiumProcedure
+    .input(z.object({ templateId: z.string().optional() }).optional())
+    .mutation(async ({ ctx, input }) => {
+      const templateId = (input?.templateId || "blank") as TemplateId;
+      const template = workflowTemplates[templateId] || workflowTemplates.blank;
+      
+      // Create the workflow
+      const workflow = await prisma.workflow.create({
+        data: {
+          name: template.name || generateSlug(3),
+          userId: ctx.auth.user.id,
         },
-      },
-    });
-  }),
+      });
+
+      // Create nodes and collect their IDs
+      const nodeIds: string[] = [];
+      for (const node of template.nodes) {
+        const createdNode = await prisma.node.create({
+          data: {
+            workflowId: workflow.id,
+            type: node.type,
+            name: node.type,
+            position: node.position,
+          },
+        });
+        nodeIds.push(createdNode.id);
+      }
+
+      // Create connections using the node IDs
+      for (const conn of template.connections) {
+        await prisma.connection.create({
+          data: {
+            workflowId: workflow.id,
+            fromNodeId: nodeIds[conn.fromIndex],
+            toNodeId: nodeIds[conn.toIndex],
+            fromOutput: "main",
+            toInput: "main",
+          },
+        });
+      }
+
+      return workflow;
+    }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {

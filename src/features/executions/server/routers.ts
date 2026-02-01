@@ -23,6 +23,27 @@ export const executionsRouter = createTRPCRouter({
         }
       });
     }),
+  getByWorkflow: protectedProcedure
+    .input(z.object({ 
+      workflowId: z.string(),
+      limit: z.number().min(1).max(20).default(5),
+    }))
+    .query(async ({ ctx, input }) => {
+      return prisma.execution.findMany({
+        where: {
+          workflowId: input.workflowId,
+          workflow: { userId: ctx.auth.user.id },
+        },
+        orderBy: { startedAt: "desc" },
+        take: input.limit,
+        select: {
+          id: true,
+          status: true,
+          startedAt: true,
+          completedAt: true,
+        },
+      });
+    }),
   getMany: protectedProcedure
     .input(
       z.object({

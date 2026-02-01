@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { EntityListSkeleton } from "@/components/skeletons";
 import {
   EmptyView,
   EntityContainer,
@@ -23,6 +25,7 @@ import { useWorkflowsParams } from "../hooks/use-workflows-params";
 import { useEntitySearch } from "@/hooks/use-entity-search";
 import type { Workflow } from "@prisma/client";
 import { WorkflowIcon } from "lucide-react";
+import { WorkflowTemplates } from "./workflow-templates";
 
 export const WorkflowsSearch = () => {
   const [params, setParams] = useWorkflowsParams();
@@ -55,7 +58,7 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
   const { handleError, modal } = useUpgradeModal();
   const router = useRouter();
   const handleCreate = () => {
-    createWorkflow.mutate(undefined, {
+    createWorkflow.mutate({ templateId: "blank" }, {
       onSuccess: (data) => {
         router.push(`/workflows/${data.id}`);
       },
@@ -112,7 +115,7 @@ export const WorkflowsContainer = ({
 };
 
 export const WorkflowsLoading = () => {
-  return <LoadingView message="Loading workflows..." />;
+  return <EntityListSkeleton count={5} />;
 };
 
 export const WorkflowsError = () => {
@@ -123,9 +126,15 @@ export const WorkflowsEmpty = () => {
   const router = useRouter();
   const createWorkflow = useCreateWorkflow();
   const { handleError, modal } = useUpgradeModal();
+  const [showTemplates, setShowTemplates] = useState(false);
 
-  const handleCreate = () => {
-    createWorkflow.mutate(undefined, {
+  // Auto-open templates dialog for new users (no workflows)
+  useEffect(() => {
+    setShowTemplates(true);
+  }, []);
+
+  const handleSelectTemplate = (templateId: string) => {
+    createWorkflow.mutate({ templateId }, {
       onError: (error) => {
         handleError(error);
       },
@@ -134,11 +143,17 @@ export const WorkflowsEmpty = () => {
       },
     });
   };
+
   return (
     <>
       {modal}
+      <WorkflowTemplates
+        open={showTemplates}
+        onOpenChange={setShowTemplates}
+        onSelectTemplate={handleSelectTemplate}
+      />
       <EmptyView
-        onNew={handleCreate}
+        onNew={() => setShowTemplates(true)}
         message="You haven't created any workflows yet. Get Started by
         creating your first workflow"
       />
