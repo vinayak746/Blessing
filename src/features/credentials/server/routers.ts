@@ -64,10 +64,17 @@ export const credentialsRouter = createTRPCRouter({
 
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return prisma.credential.findUniqueOrThrow({
+    .query(async ({ ctx, input }) => {
+      const credential = await prisma.credential.findUniqueOrThrow({
         where: { id: input.id, userId: ctx.auth.user.id },
       });
+      // Don't expose the encrypted value to the client
+      // Return a masked version instead
+      return {
+        ...credential,
+        value: "••••••••", // Masked value for security
+        hasValue: !!credential.value,
+      };
     }),
   getMany: protectedProcedure
     .input(
@@ -88,7 +95,15 @@ export const credentialsRouter = createTRPCRouter({
         prisma.credential.findMany({
           skip: (page - 1) * pageSize,
           take: pageSize,
-
+          // Only select non-sensitive fields
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            userId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
           where: {
             userId: ctx.auth.user.id,
             name: {
@@ -136,6 +151,12 @@ export const credentialsRouter = createTRPCRouter({
 
       return prisma.credential.findMany({
         where: { type, userId: ctx.auth.user.id },
+        // Only return id and name for credential selection dropdowns
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
         orderBy: {
           updatedAt: "desc",
         },

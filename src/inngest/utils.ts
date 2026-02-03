@@ -38,7 +38,10 @@ export const topologicalSort = (
     sortedNodeIds = [...new Set(sortedNodeIds)];
   } catch (error) {
     if (error instanceof Error && error.message.includes("Cyclic")) {
-      throw new Error("Workflow contains a cycle");
+      throw new Error(
+        "Your workflow contains a loop (cycle). Workflows must flow in one direction. " +
+        "Please check your connections and remove any that create a circular path."
+      );
     }
     throw error;
   }

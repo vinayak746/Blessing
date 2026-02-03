@@ -26,6 +26,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { useState } from "react";
 
 type EntityHeaderProps = {
   title: string;
@@ -255,6 +266,7 @@ interface EnitityItemProps {
   onRemove?: () => void | Promise<void>;
   isRemoving?: boolean;
   className?: string;
+  deleteConfirmMessage?: string;
 }
 
 export const EntityItem = ({
@@ -266,68 +278,105 @@ export const EntityItem = ({
   onRemove,
   isRemoving,
   className,
+  deleteConfirmMessage,
 }: EnitityItemProps) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleRemove = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isRemoving) {
       return;
     }
+    // Show confirmation dialog
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDelete = async () => {
     if (onRemove) {
       await onRemove();
     }
+    setShowDeleteConfirm(false);
   };
   return (
-    <Link href={href} prefetch>
-      <Card
-        className={cn(
-          "p-4 shadow-none hover:shadow cursor-pointer",
-          isRemoving && "opacity-50 cursor-not-allowed",
-          className,
-        )}
-      >
-        <CardContent className="flex flex-row items-center justify-between p-0">
-          <div className="flex items-center gap-3">
-            {image}
-            <div>
-              <CardTitle className="text-base font-medium">{title}</CardTitle>
-              {!!subtitle && (
-                <CardDescription className="text-xs">
-                  {subtitle}
-                </CardDescription>
+    <>
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirmMessage || `This will permanently delete "${title}". This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isRemoving ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
               )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <Link href={href} prefetch>
+        <Card
+          className={cn(
+            "p-4 shadow-none hover:shadow cursor-pointer",
+            isRemoving && "opacity-50 cursor-not-allowed",
+            className,
+          )}
+        >
+          <CardContent className="flex flex-row items-center justify-between p-0">
+            <div className="flex items-center gap-3">
+              {image}
+              <div>
+                <CardTitle className="text-base font-medium">{title}</CardTitle>
+                {!!subtitle && (
+                  <CardDescription className="text-xs">
+                    {subtitle}
+                  </CardDescription>
+                )}
+              </div>
             </div>
-          </div>
-          {(actions || onRemove) && (
-            <div className="flex gap-x-4 items-center">
-              {actions}
-              {onRemove && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
+            {(actions || onRemove) && (
+              <div className="flex gap-x-4 items-center">
+                {actions}
+                {onRemove && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`More options for ${title}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVerticalIcon className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <MoreVerticalIcon className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DropdownMenuItem onClick={handleRemove}>
-                      <TrashIcon className="size-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
+                      <DropdownMenuItem onClick={handleRemove}>
+                        <TrashIcon className="size-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
+    </>
   );
 };

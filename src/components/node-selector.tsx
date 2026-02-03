@@ -29,21 +29,21 @@ const triggerNodes: NodeTypeOption[] = [
     type: NodeType.MANUAL_TRIGGER,
     label: "Trigger Manually",
     description:
-      "Runs the flow on clicking a button. Good for getting started quickly.",
+      "Click a button to run your workflow. Perfect for testing!",
     icon: MousePointerIcon,
   },
   {
     type: NodeType.GOOGLE_FORM_TRIGGER,
     label: "Google Form",
     description:
-      "Runs the flow when a Google Form is submitted.",
+      "Automatically runs when someone submits your Google Form.",
     icon: "/logos/googleform.svg",
   },
   {
     type: NodeType.STRIPE_TRIGGER,
     label: "Stripe Event",
     description:
-      "Runs the flow when a Stripe Event is captured.",
+      "Automatically runs when payments or subscriptions happen.",
     icon: "/logos/stripe.svg",
   },
 ];
@@ -52,43 +52,43 @@ const executionNodes: NodeTypeOption[] = [
   {
     type: NodeType.HTTP_REQUEST,
     label: "HTTP Request",
-    description: "Make an HTTP request",
+    description: "Call any web API or service to get or send data.",
     icon: GlobeIcon,
   },
   {
     type: NodeType.GEMINI,
     label: "Gemini",
-    description: "Uses Google Gemini to generate text",
+    description: "Use Google's AI to analyze text, answer questions, and more.",
     icon: "/logos/gemini.svg",
   },
   {
     type: NodeType.OPENAI,
     label: "OpenAI",
-    description: "Uses OpenAI to generate text",
+    description: "Use ChatGPT to generate text, summaries, or creative content.",
     icon: "/logos/openai.svg",
   },
   {
     type: NodeType.ANTHROPIC,
     label: "Anthropic",
-    description: "Uses Anthropic to generate text",
+    description: "Use Claude AI for helpful, safe, and honest responses.",
     icon: "/logos/anthropic.svg",
   },
   {
     type: NodeType.DISCORD,
     label: "Discord",
-    description: "Send a message to Discord",
+    description: "Send messages or notifications to a Discord channel.",
     icon: "/logos/discord.svg",
   },
   {
     type: NodeType.SLACK,
     label: "Slack",
-    description: "Send a message to Slack",
+    description: "Send messages or notifications to a Slack channel.",
     icon: "/logos/slack.svg",
   },
   {
     type: NodeType.WHATSAPP,
     label: "WhatsApp",
-    description: "Send a message to WhatsApp",
+    description: "Send WhatsApp messages to your contacts.",
     icon: "/logos/whatsapp.svg", // Add WhatsApp logo to public/logos/
   },
 ];
@@ -190,7 +190,9 @@ export function NodeSelector({
           <SheetHeader>
             <SheetTitle>Add a Node</SheetTitle>
             <SheetDescription>
-              Choose a trigger or action to add to your workflow
+              <strong>Triggers</strong> start your workflow. <strong>Actions</strong> do the work.
+              <br />
+              <span className="text-xs">Connect them by dragging from right handle → left handle.</span>
             </SheetDescription>
           </SheetHeader>
 

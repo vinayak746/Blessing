@@ -21,6 +21,7 @@ import {
   Panel,
 } from "@xyflow/react";
 import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
+import { createId } from "@paralleldrive/cuid2";
 
 import "@xyflow/react/dist/style.css";
 import { nodeComponents } from "@/config/node-components";
@@ -37,6 +38,10 @@ import { ExecutionHistoryPanel } from "./execution-history-panel";
 import { useClipboard } from "../hooks/use-clipboard";
 import { Button } from "@/components/ui/button";
 import { Maximize2 } from "lucide-react";
+import { toast } from "sonner";
+import { useWorkflowValidation } from "../hooks/use-workflow-validation";
+import { ValidationIndicator } from "./validation-indicator";
+import { HelpButton, BeginnerGuideDialog, useIsNewUser } from "./beginner-guide";
 
 export const EditorLoading = () => {
   return <EditorSkeleton />;
@@ -57,6 +62,21 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
 
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
+  
+  // Beginner guide state
+  const isNewUser = useIsNewUser();
+  const [showGuide, setShowGuide] = useState(false);
+  
+  // Show guide for new users after a short delay
+  useEffect(() => {
+    if (isNewUser) {
+      const timer = setTimeout(() => setShowGuide(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewUser]);
+
+  // Workflow validation for beginner-friendly errors
+  const { issues, errors, warnings, infos, isValid, canExecute } = useWorkflowValidation(nodes, edges);
 
   // Auto-save hook with optimized settings
   const { status, save, hasUnsavedChanges, lastSavedAt } = useAutoSave({
@@ -120,7 +140,21 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
       if (hasSignificantChange) {
         takeSnapshot();
       }
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
+      setNodes((nodesSnapshot) => {
+        const newNodes = applyNodeChanges(changes, nodesSnapshot);
+        
+        // If all nodes are deleted, restore the initial placeholder node
+        if (newNodes.length === 0) {
+          return [{
+            id: createId(),
+            type: NodeType.INITIAL,
+            position: { x: 0, y: 0 },
+            data: {},
+          }];
+        }
+        
+        return newNodes;
+      });
     },
     [takeSnapshot]
   );
@@ -148,6 +182,31 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
   const hasManualTrigger = useMemo(() => {
     return nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER);
   }, [nodes]);
+
+  // Handle edge click for mobile deletion (double-tap to delete)
+  const [lastEdgeClick, setLastEdgeClick] = useState<{ id: string; time: number } | null>(null);
+  
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    const now = Date.now();
+    
+    // Check for double-tap (within 300ms)
+    if (lastEdgeClick && lastEdgeClick.id === edge.id && now - lastEdgeClick.time < 300) {
+      // Double-tap detected - delete the edge
+      takeSnapshot();
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+      setLastEdgeClick(null);
+      toast.success("Connection deleted", { 
+        description: "Undo with Ctrl+Z",
+        duration: 2000 
+      });
+    } else {
+      // First tap - record it and show hint on mobile
+      setLastEdgeClick({ id: edge.id, time: now });
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        toast.info("Tap again to delete", { duration: 1500 });
+      }
+    }
+  }, [lastEdgeClick, takeSnapshot, setEdges]);
 
   // Handle fit view
   const handleFitView = useCallback(() => {
@@ -263,6 +322,16 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [setNodeSelectorOpen]);
 
+  // Detect mobile for touch-friendly settings
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <div className="size-full">
       <ReactFlow
@@ -271,46 +340,71 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onEdgeClick={onEdgeClick}
         nodeTypes={nodeComponents}
         onInit={setEditor}
         fitView
         snapGrid={[10, 10]}
         snapToGrid
         panOnScroll
-        panOnDrag={false}
-        selectionOnDrag
+        panOnDrag={isMobile}
+        selectionOnDrag={!isMobile}
+        edgesReconnectable
+        edgesFocusable
+        deleteKeyCode={["Backspace", "Delete"]}
       >
         <Background />
-        <Controls />
-        <MiniMap />
+        {/* Show smaller controls on mobile */}
+        <Controls className={isMobile ? "!left-2 !bottom-2 scale-90" : ""} />
+        {/* Hide MiniMap on mobile */}
+        {!isMobile && <MiniMap className="!bottom-24" />}
 
-        {/* Auto-save indicator */}
-        <Panel position="top-left" className="!top-3 !left-14">
-          <AutoSaveIndicator
-            status={status}
-            lastSavedAt={lastSavedAt}
-            onSave={save}
-          />
+        {/* Top-left: Save status (compact on mobile) */}
+        <Panel position="top-left" className={isMobile ? "!top-2 !left-2" : "!top-3 !left-14"}>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <AutoSaveIndicator
+              status={status}
+              lastSavedAt={lastSavedAt}
+              onSave={save}
+            />
+            <ValidationIndicator
+              issues={issues}
+              errors={errors}
+              warnings={warnings}
+              infos={infos}
+              isValid={isValid}
+              compact={isMobile}
+            />
+          </div>
         </Panel>
 
-        <Panel position="top-right">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleFitView}
-              className="size-8"
-              title="Fit view (F)"
-            >
-              <Maximize2 className="size-4" />
-            </Button>
+        {/* Top-right: Actions */}
+        <Panel position="top-right" className={isMobile ? "!top-2 !right-2" : ""}>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <HelpButton />
+            {!isMobile && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleFitView}
+                className="size-8"
+                title="Fit view (F)"
+              >
+                <Maximize2 className="size-4" />
+              </Button>
+            )}
             <AddNodeButton />
           </div>
         </Panel>
 
+        {/* Execute button */}
         {hasManualTrigger && (
-          <Panel position="bottom-center">
-            <ExecuteWorkflowButton workflowId={workflowId} />
+          <Panel position="bottom-center" className={isMobile ? "!bottom-14" : ""}>
+            <ExecuteWorkflowButton 
+              workflowId={workflowId} 
+              canExecute={canExecute}
+              validationErrors={errors}
+            />
           </Panel>
         )}
       </ReactFlow>
@@ -320,6 +414,9 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
 
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal />
+      
+      {/* Beginner Guide Dialog */}
+      <BeginnerGuideDialog open={showGuide} onOpenChange={setShowGuide} />
     </div>
   );
 };

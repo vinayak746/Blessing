@@ -1,5 +1,6 @@
 import { sendWorkflowExecution } from "@/inngest/utils";
 import { type NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 
 export async function POST(request: NextRequest){
     try{
@@ -12,6 +13,19 @@ export async function POST(request: NextRequest){
             {status: 400},
         );
     };
+
+    // Security: Verify the workflow exists and is active
+    const workflow = await prisma.workflow.findUnique({
+      where: { id: workflowId },
+      select: { id: true, userId: true },
+    });
+
+    if (!workflow) {
+      return NextResponse.json(
+        { success: false, error: "Workflow not found" },
+        { status: 404 }
+      );
+    }
 
      const body = await request.json();
 
@@ -32,7 +46,7 @@ export async function POST(request: NextRequest){
      })
      return NextResponse.json({success: true}, {status: 200});
     }catch(error){
-        console.error("Stripe webhook error:", error);
+        console.error("Stripe webhook error:", error instanceof Error ? error.message : "Unknown error");
         return NextResponse.json(
             {success: false, error: "Failed to process Stripe event"},
             {status: 500},

@@ -123,7 +123,10 @@ const credentialLogos: Record<CredentialType, string> = {
     [CredentialType.WHATSAPP]: "/logos/whatsapp.svg",
 }
 
-export const CredentialItem = ({ data }: { data: Credential }) => {
+// Type for credential list item (without sensitive value field)
+type CredentialListItem = Omit<Credential, 'value'>;
+
+export const CredentialItem = ({ data }: { data: CredentialListItem }) => {
   const removeCredential = useRemoveCredential();
 
   const handleRemove = () => {
@@ -148,6 +151,7 @@ export const CredentialItem = ({ data }: { data: Credential }) => {
       }
       onRemove={handleRemove}
       isRemoving={removeCredential.isPending}
+      deleteConfirmMessage={`This will permanently delete the "${data.name}" credential. Any workflows using this credential will stop working.`}
     />
   );
 };

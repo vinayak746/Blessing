@@ -69,23 +69,23 @@ export function ExecutionHistoryPanel({ workflowId }: ExecutionHistoryPanelProps
 
   if (isCollapsed) {
     return (
-      <div className="absolute bottom-4 right-4 z-10">
+      <div className="absolute bottom-4 right-4 z-10 max-md:bottom-16 max-md:right-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsCollapsed(false)}
           className="bg-background/95 backdrop-blur-sm shadow-lg border-border/50"
         >
-          <History className="size-4 mr-2" />
-          History
-          <ChevronRight className="size-3 ml-1" />
+          <History className="size-4 md:mr-2" />
+          <span className="hidden md:inline">History</span>
+          <ChevronRight className="size-3 ml-1 hidden md:block" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="absolute bottom-4 right-4 z-10 w-72 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 shadow-xl overflow-hidden">
+    <div className="absolute bottom-4 right-4 z-10 w-72 max-md:w-[calc(100vw-1rem)] max-md:bottom-16 max-md:right-2 max-md:left-2 bg-background/95 backdrop-blur-sm rounded-lg border border-border/50 shadow-xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30">
         <div className="flex items-center gap-2">

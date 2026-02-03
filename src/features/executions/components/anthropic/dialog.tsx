@@ -106,7 +106,7 @@ export const AnthropicDialog = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-8 mt-4"
+            className="space-y-4 sm:space-y-6 mt-4"
           >
             <FormField
               control={form.control}
