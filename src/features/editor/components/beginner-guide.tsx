@@ -26,8 +26,13 @@ import {
   Sparkles,
   ChevronRight,
   ChevronLeft,
+  Zap,
+  Smartphone,
+  Keyboard,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 // Local storage key
 const GUIDE_SHOWN_KEY = "blessing-workflow-guide-shown";
@@ -38,49 +43,56 @@ interface TipStep {
   description: string;
   icon: React.ReactNode;
   example?: string;
+  badge?: string;
 }
 
 const guideSteps: TipStep[] = [
   {
-    title: "Welcome to the Workflow Editor!",
+    title: "Welcome to Workflows!",
     description:
-      "A workflow automates tasks by connecting different actions together. Think of it like a recipe - you define the steps, and the system follows them automatically.",
-    icon: <Sparkles className="size-6 text-primary" />,
+      "Automate your tasks by connecting different actions together. Think of it like a recipe — you define the steps, and we execute them automatically.",
+    icon: <Sparkles className="size-5" />,
+    badge: "Let's get started",
   },
   {
-    title: "Step 1: Add a Trigger",
+    title: "Add a Trigger",
     description:
-      "Every workflow needs a trigger - this is what starts your workflow. You can trigger manually (for testing), or automatically when a Google Form is submitted or a Stripe payment happens.",
-    icon: <MousePointer className="size-6 text-blue-500" />,
-    example: "Click the + button (top right) or press Shift+A to add a node",
+      "Every workflow needs a trigger — this is what starts your automation. Trigger manually for testing, or automatically when events happen.",
+    icon: <Zap className="size-5" />,
+    example: "Click the + button or press Shift+A to add your first trigger",
+    badge: "Step 1",
   },
   {
-    title: "Step 2: Add Actions",
+    title: "Add Actions",
     description:
-      "Actions are what your workflow does. Send a Discord message, use AI to process text, make an HTTP request, or send a Slack notification.",
-    icon: <Lightbulb className="size-6 text-yellow-500" />,
-    example: "Try adding an OpenAI or Discord node after your trigger",
+      "Actions are what your workflow does. Send messages to Discord or Slack, use AI to process text, make API calls, and more.",
+    icon: <Lightbulb className="size-5" />,
+    example: "Popular: OpenAI for AI responses, Discord for notifications",
+    badge: "Step 2",
   },
   {
-    title: "Step 3: Connect Nodes",
+    title: "Connect the Dots",
     description:
-      "Drag from the output handle (circle on the right) of one node to the input handle (circle on the left) of another. This creates a connection and lets data flow between them.",
-    icon: <Link2 className="size-6 text-green-500" />,
-    example: "Data flows from left to right, like reading a book",
+      "Drag from the output handle (●) on the right side of one node to the input handle on the left side of another. Data flows through these connections.",
+    icon: <Link2 className="size-5" />,
+    example: "Data flows left → right, like reading a sentence",
+    badge: "Step 3",
   },
   {
-    title: "Step 4: Configure & Run",
+    title: "Configure & Execute",
     description:
-      "Click the settings icon on each node to configure it. Once everything is connected, click 'Execute Workflow' to run it!",
-    icon: <Play className="size-6 text-purple-500" />,
-    example: "Check the validation indicator to make sure everything is set up correctly",
+      "Click the settings icon ⚙️ on each node to configure it. When the validation indicator shows ✓, you're ready to execute!",
+    icon: <Play className="size-5" />,
+    example: "Use 'Execute Workflow' button to run your automation",
+    badge: "Step 4",
   },
   {
-    title: "Tips for Mobile Users",
+    title: "Mobile Tips",
     description:
-      "On mobile: Double-tap a connection line to delete it. Drag with one finger to pan around the canvas. Use the + button at the top right to add new nodes.",
-    icon: <MousePointer className="size-6 text-orange-500" />,
-    example: "Use the zoom controls at the bottom left to adjust your view",
+      "On mobile: Double-tap a connection to delete it. Drag with one finger to move nodes. Use two fingers to pan and zoom the canvas.",
+    icon: <Smartphone className="size-5" />,
+    example: "Zoom controls are at the bottom left corner",
+    badge: "Pro tip",
   },
 ];
 
@@ -134,68 +146,110 @@ export function BeginnerGuideDialog({ open, onOpenChange }: BeginnerGuideDialogP
   };
 
   const step = guideSteps[currentStep];
+  const isLastStep = currentStep === guideSteps.length - 1;
+  const isFirstStep = currentStep === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-2">
-            {step.icon}
-            <DialogTitle>{step.title}</DialogTitle>
-          </div>
-          <DialogDescription className="text-base leading-relaxed">
-            {step.description}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden max-h-[90vh]">
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-5 border-b bg-muted/30">
+          {/* Skip button */}
+          <button
+            onClick={handleSkip}
+            className="absolute top-3 right-3 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <X className="size-4" />
+          </button>
 
-        {step.example && (
-          <div className="bg-muted/50 rounded-lg p-4 border">
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
-              <ArrowRight className="size-4 text-primary" />
-              {step.example}
-            </p>
-          </div>
-        )}
+          {/* Badge */}
+          {step.badge && (
+            <span className="inline-block px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full mb-3">
+              {step.badge}
+            </span>
+          )}
 
-        {/* Step indicators */}
-        <div className="flex justify-center gap-1.5 py-2">
-          {guideSteps.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentStep(index)}
-              className={cn(
-                "size-2 rounded-full transition-all",
-                index === currentStep
-                  ? "bg-primary w-6"
-                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              )}
-            />
-          ))}
+          {/* Icon and title */}
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+              {step.icon}
+            </div>
+            <DialogTitle className="text-lg font-semibold">
+              {step.title}
+            </DialogTitle>
+          </div>
         </div>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between">
-          <Button variant="ghost" onClick={handleSkip}>
-            Skip guide
-          </Button>
-          <div className="flex gap-2">
-            {currentStep > 0 && (
-              <Button variant="outline" onClick={handlePrevious}>
-                <ChevronLeft className="size-4 mr-1" />
-                Back
-              </Button>
-            )}
-            <Button onClick={handleNext}>
-              {currentStep === guideSteps.length - 1 ? (
-                "Get Started"
-              ) : (
-                <>
-                  Next
-                  <ChevronRight className="size-4 ml-1" />
-                </>
-              )}
-            </Button>
+        {/* Content */}
+        <div className="px-6 py-5 space-y-4 overflow-y-auto">
+          <DialogDescription className="text-[15px] leading-relaxed text-foreground">
+            {step.description}
+          </DialogDescription>
+
+          {step.example && (
+            <div className="flex items-start gap-3 p-3.5 bg-muted/50 rounded-xl border">
+              <div className="mt-0.5 p-1 rounded-md bg-primary/10">
+                <ArrowRight className="size-3.5 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {step.example}
+              </p>
+            </div>
+          )}
+
+          {/* Step indicators */}
+          <div className="flex justify-center items-center gap-1.5 pt-2">
+            {guideSteps.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentStep(index)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-300",
+                  index === currentStep
+                    ? "bg-primary w-6"
+                    : "bg-muted-foreground/25 w-1.5 hover:bg-muted-foreground/40"
+                )}
+                aria-label={`Go to step ${index + 1}`}
+              />
+            ))}
           </div>
-        </DialogFooter>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t bg-muted/30 flex items-center justify-between gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handlePrevious}
+            disabled={isFirstStep}
+            className={cn(isFirstStep && "invisible")}
+          >
+            <ChevronLeft className="size-4 mr-1" />
+            Back
+          </Button>
+
+          <span className="text-xs text-muted-foreground">
+            {currentStep + 1} of {guideSteps.length}
+          </span>
+
+          <Button
+            size="sm"
+            onClick={handleNext}
+            className="min-w-[100px]"
+          >
+            {isLastStep ? (
+              <>
+                <CheckCircle2 className="size-4 mr-1.5" />
+                Got it!
+              </>
+            ) : (
+              <>
+                Next
+                <ChevronRight className="size-4 ml-1" />
+              </>
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -211,14 +265,15 @@ export function HelpButton() {
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={() => setShowGuide(true)}
-            className="size-8"
+            className="h-8 gap-1.5 px-2.5 text-muted-foreground hover:text-foreground"
           >
             <HelpCircle className="size-4" />
+            <span className="hidden sm:inline text-xs">Help</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Need help? View the guide</TooltipContent>
+        <TooltipContent>View the beginner's guide</TooltipContent>
       </Tooltip>
 
       <BeginnerGuideDialog open={showGuide} onOpenChange={setShowGuide} />
@@ -274,15 +329,16 @@ export function ContextualTip({
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg border border-primary/20 text-sm">
-      <span>{activeTip.text}</span>
+    <div className="flex items-center gap-2.5 px-3 py-2 bg-muted/50 rounded-xl border text-sm animate-in fade-in slide-in-from-top-2 duration-300">
+      <Lightbulb className="size-4 text-primary shrink-0" />
+      <span className="text-foreground/90 text-xs sm:text-sm">{activeTip.text.replace("💡 Tip: ", "")}</span>
       <Button
         variant="ghost"
         size="icon"
-        className="size-5 hover:bg-primary/20"
+        className="size-6 ml-auto hover:bg-muted shrink-0"
         onClick={handleDismiss}
       >
-        <X className="size-3" />
+        <X className="size-3.5" />
       </Button>
     </div>
   );
@@ -291,23 +347,25 @@ export function ContextualTip({
 // Quick tips panel for the side
 export function QuickTipsPanel() {
   const tips = [
-    { icon: "⌨️", text: "Press Shift+A to quickly add nodes" },
-    { icon: "💾", text: "Ctrl+S to save, but we auto-save too!" },
-    { icon: "↩️", text: "Ctrl+Z to undo, Ctrl+Y to redo" },
-    { icon: "🔍", text: "Press F to fit all nodes in view" },
-    { icon: "📋", text: "Ctrl+C/V to copy and paste nodes" },
+    { icon: <Keyboard className="size-3.5" />, text: "Shift+A to add nodes" },
+    { icon: <Keyboard className="size-3.5" />, text: "Ctrl+S to save" },
+    { icon: <Keyboard className="size-3.5" />, text: "Ctrl+Z / Y for undo/redo" },
+    { icon: <Keyboard className="size-3.5" />, text: "F to fit view" },
+    { icon: <Keyboard className="size-3.5" />, text: "Ctrl+C / V to copy/paste" },
   ];
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="p-4 space-y-4">
       <h3 className="font-semibold text-sm flex items-center gap-2">
-        <Lightbulb className="size-4 text-yellow-500" />
-        Quick Tips
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <Lightbulb className="size-3.5 text-primary" />
+        </div>
+        Keyboard Shortcuts
       </h3>
-      <ul className="space-y-2">
+      <ul className="space-y-2.5">
         {tips.map((tip, i) => (
-          <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-            <span>{tip.icon}</span>
+          <li key={i} className="text-sm text-muted-foreground flex items-center gap-2.5">
+            <span className="p-1 rounded bg-muted">{tip.icon}</span>
             <span>{tip.text}</span>
           </li>
         ))}

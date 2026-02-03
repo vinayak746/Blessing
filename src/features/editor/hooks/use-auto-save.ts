@@ -83,6 +83,12 @@ export const useAutoSave = ({
   const isSavingRef = useRef(false);
   const retryCountRef = useRef(0);
   const lastManualSaveRef = useRef<number>(0);
+  
+  // Refs for throttled hash calculations
+  const lastHashCalcRef = useRef<number>(0);
+  const cachedStructureHashRef = useRef<string>("");
+  const cachedPositionHashRef = useRef<string>("");
+  const hashCalcIntervalMs = 200; // Only recalculate hashes every 200ms max
 
   // Store latest nodes/edges in refs to avoid stale closures
   const nodesRef = useRef(nodes);
@@ -90,9 +96,16 @@ export const useAutoSave = ({
   nodesRef.current = nodes;
   edgesRef.current = edges;
 
-  // Calculate hashes
-  const currentStructureHash = createStructureHash(nodes, edges);
-  const currentPositionHash = createPositionHash(nodes);
+  // Throttled hash calculation - only recalculate every 200ms to prevent lag during drag
+  const now = Date.now();
+  if (now - lastHashCalcRef.current >= hashCalcIntervalMs || isInitialMount.current) {
+    cachedStructureHashRef.current = createStructureHash(nodes, edges);
+    cachedPositionHashRef.current = createPositionHash(nodes);
+    lastHashCalcRef.current = now;
+  }
+  
+  const currentStructureHash = cachedStructureHashRef.current;
+  const currentPositionHash = cachedPositionHashRef.current;
 
   // Determine if there are unsaved changes
   const hasUnsavedChanges =

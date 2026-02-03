@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import { NodeType } from "@prisma/client";
 
@@ -100,11 +100,40 @@ function getNodeLabel(nodeType: string): string {
 }
 
 export function useWorkflowValidation(nodes: Node[], edges: Edge[]) {
+  // Create a stable key based only on structural properties (not positions)
+  // This prevents re-validation during node dragging
+  const structuralKey = useMemo(() => {
+    const nodeKey = nodes
+      .map(n => `${n.id}:${n.type}`)
+      .sort()
+      .join(',');
+    const edgeKey = edges
+      .map(e => `${e.source}:${e.target}`)
+      .sort()
+      .join(',');
+    return `${nodeKey}|${edgeKey}`;
+  }, [nodes, edges]);
+
+  // Cache nodes/edges for validation (only update when structure changes)
+  const cachedNodesRef = useRef(nodes);
+  const cachedEdgesRef = useRef(edges);
+  const lastKeyRef = useRef(structuralKey);
+  
+  if (structuralKey !== lastKeyRef.current) {
+    cachedNodesRef.current = nodes;
+    cachedEdgesRef.current = edges;
+    lastKeyRef.current = structuralKey;
+  }
+
   const issues = useMemo(() => {
     const result: ValidationIssue[] = [];
+    
+    // Use cached nodes/edges for validation
+    const validationNodes = cachedNodesRef.current;
+    const validationEdges = cachedEdgesRef.current;
 
     // Filter out initial placeholder nodes
-    const realNodes = nodes.filter((node) => node.type !== NodeType.INITIAL);
+    const realNodes = validationNodes.filter((node) => node.type !== NodeType.INITIAL);
     
     // If no real nodes, show helpful info
     if (realNodes.length === 0) {
@@ -182,14 +211,14 @@ export function useWorkflowValidation(nodes: Node[], edges: Edge[]) {
     // Check connections when we have both triggers and actions
     if (triggerNodes.length > 0 && actionNodes.length > 0) {
       const connectedNodeIds = new Set<string>();
-      edges.forEach((edge) => {
+      validationEdges.forEach((edge) => {
         connectedNodeIds.add(edge.source);
         connectedNodeIds.add(edge.target);
       });
 
       // Warning: Trigger not connected to anything
       triggerNodes.forEach((trigger) => {
-        const hasOutgoing = edges.some((e) => e.source === trigger.id);
+        const hasOutgoing = validationEdges.some((e) => e.source === trigger.id);
         if (!hasOutgoing) {
           result.push({
             type: "warning",
@@ -202,7 +231,7 @@ export function useWorkflowValidation(nodes: Node[], edges: Edge[]) {
 
       // Warning: Action nodes not connected
       actionNodes.forEach((action) => {
-        const hasIncoming = edges.some((e) => e.target === action.id);
+        const hasIncoming = validationEdges.some((e) => e.target === action.id);
         if (!hasIncoming) {
           result.push({
             type: "warning",
@@ -219,7 +248,7 @@ export function useWorkflowValidation(nodes: Node[], edges: Edge[]) {
 
     // Check for orphan nodes (completely disconnected)
     const allConnectedNodes = new Set<string>();
-    edges.forEach((edge) => {
+    validationEdges.forEach((edge) => {
       allConnectedNodes.add(edge.source);
       allConnectedNodes.add(edge.target);
     });
@@ -240,7 +269,7 @@ export function useWorkflowValidation(nodes: Node[], edges: Edge[]) {
     });
 
     return result;
-  }, [nodes, edges]);
+  }, [structuralKey]); // Only re-validate when structure changes, not positions
 
   const errors = useMemo(
     () => issues.filter((i) => i.type === "error"),

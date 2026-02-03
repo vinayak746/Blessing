@@ -19,6 +19,7 @@ import {
   Controls,
   MiniMap,
   Panel,
+  PanOnScrollMode,
 } from "@xyflow/react";
 import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
 import { createId } from "@paralleldrive/cuid2";
@@ -347,11 +348,15 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         snapGrid={[10, 10]}
         snapToGrid
         panOnScroll
-        panOnDrag={isMobile}
+        panOnDrag={false}
         selectionOnDrag={!isMobile}
+        nodesDraggable={true}
         edgesReconnectable
         edgesFocusable
         deleteKeyCode={["Backspace", "Delete"]}
+        // Mobile: use two-finger pan, one-finger node drag
+        zoomOnPinch={true}
+        panOnScrollMode={PanOnScrollMode.Free}
       >
         <Background />
         {/* Show smaller controls on mobile */}

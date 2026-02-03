@@ -31,6 +31,12 @@ export const useUndoRedo = (
   const [futureStates, setFutureStates] = useState<HistoryState[]>([]);
   
   const isUndoingRef = useRef(false);
+  
+  // Use refs to avoid recreating callbacks on every position change
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
 
   // Take a snapshot of current state (call this before making changes)
   const takeSnapshot = useCallback(() => {
@@ -40,8 +46,8 @@ export const useUndoRedo = (
       const newPast = [
         ...past,
         {
-          nodes: JSON.parse(JSON.stringify(nodes)),
-          edges: JSON.parse(JSON.stringify(edges)),
+          nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+          edges: JSON.parse(JSON.stringify(edgesRef.current)),
         },
       ];
       // Limit history size
@@ -53,7 +59,7 @@ export const useUndoRedo = (
 
     // Clear future when new action is taken
     setFutureStates([]);
-  }, [nodes, edges, maxHistory]);
+  }, [maxHistory]);
 
   const undo = useCallback(() => {
     if (pastStates.length === 0) return;
@@ -67,8 +73,8 @@ export const useUndoRedo = (
     setFutureStates((future) => [
       ...future,
       {
-        nodes: JSON.parse(JSON.stringify(nodes)),
-        edges: JSON.parse(JSON.stringify(edges)),
+        nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+        edges: JSON.parse(JSON.stringify(edgesRef.current)),
       },
     ]);
 
@@ -80,7 +86,7 @@ export const useUndoRedo = (
     setTimeout(() => {
       isUndoingRef.current = false;
     }, 0);
-  }, [pastStates, nodes, edges, setNodes, setEdges]);
+  }, [pastStates, setNodes, setEdges]);
 
   const redo = useCallback(() => {
     if (futureStates.length === 0) return;
@@ -94,8 +100,8 @@ export const useUndoRedo = (
     setPastStates((past) => [
       ...past,
       {
-        nodes: JSON.parse(JSON.stringify(nodes)),
-        edges: JSON.parse(JSON.stringify(edges)),
+        nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+        edges: JSON.parse(JSON.stringify(edgesRef.current)),
       },
     ]);
 
@@ -106,7 +112,7 @@ export const useUndoRedo = (
     setTimeout(() => {
       isUndoingRef.current = false;
     }, 0);
-  }, [futureStates, nodes, edges, setNodes, setEdges]);
+  }, [futureStates, setNodes, setEdges]);
 
   return {
     undo,
