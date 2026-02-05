@@ -89,9 +89,9 @@ const guideSteps: TipStep[] = [
   {
     title: "Mobile Tips",
     description:
-      "On mobile: Double-tap a connection to delete it. Drag with one finger to move nodes. Use two fingers to pan and zoom the canvas.",
+      "On mobile: Double-tap a connection to delete it. Tap and drag nodes to move them. Use pinch gestures to zoom in/out.",
     icon: <Smartphone className="size-5" />,
-    example: "Zoom controls are at the bottom left corner",
+    example: "Tip: Select a node to see its settings toolbar",
     badge: "Pro tip",
   },
 ];
@@ -187,11 +187,11 @@ export function BeginnerGuideDialog({ open, onOpenChange }: BeginnerGuideDialogP
           </DialogDescription>
 
           {step.example && (
-            <div className="flex items-start gap-3 p-3.5 bg-muted/50 rounded-xl border">
+            <div className="flex items-start gap-3 p-3.5 bg-muted/60 dark:bg-muted/40 rounded-xl border border-border">
               <div className="mt-0.5 p-1 rounded-md bg-primary/10">
                 <ArrowRight className="size-3.5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-foreground/80 dark:text-foreground/90 leading-relaxed">
                 {step.example}
               </p>
             </div>
@@ -258,7 +258,23 @@ export function BeginnerGuideDialog({ open, onOpenChange }: BeginnerGuideDialogP
 // Help button that shows the guide
 export function HelpButton() {
   const [showGuide, setShowGuide] = useState(false);
-
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  if (isMobile) {
+    return (
+      <>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowGuide(true)}
+          className="h-8 gap-1.5 px-2.5 text-muted-foreground hover:text-foreground"
+        >
+          <HelpCircle className="size-4" />
+          <span className="hidden sm:inline text-xs">Help</span>
+        </Button>
+        <BeginnerGuideDialog open={showGuide} onOpenChange={setShowGuide} />
+      </>
+    );
+  }
   return (
     <>
       <Tooltip>
@@ -275,7 +291,6 @@ export function HelpButton() {
         </TooltipTrigger>
         <TooltipContent>View the beginner's guide</TooltipContent>
       </Tooltip>
-
       <BeginnerGuideDialog open={showGuide} onOpenChange={setShowGuide} />
     </>
   );

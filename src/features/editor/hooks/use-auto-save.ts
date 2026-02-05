@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
 import type { Node, Edge } from "@xyflow/react";
-import { toast } from "sonner";
 
 export type AutoSaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error" | "offline";
 
@@ -88,7 +87,7 @@ export const useAutoSave = ({
   const lastHashCalcRef = useRef<number>(0);
   const cachedStructureHashRef = useRef<string>("");
   const cachedPositionHashRef = useRef<string>("");
-  const hashCalcIntervalMs = 200; // Only recalculate hashes every 200ms max
+  const hashCalcIntervalMs = 500; // Only recalculate hashes every 500ms max to prevent lag during drag
 
   // Store latest nodes/edges in refs to avoid stale closures
   const nodesRef = useRef(nodes);
@@ -152,7 +151,7 @@ export const useAutoSave = ({
 
   // Core save function
   const performSave = useCallback(
-    (showToast: boolean) => {
+    () => {
       const currentNodes = nodesRef.current;
       const currentEdges = edgesRef.current;
       const structureHash = createStructureHash(currentNodes, currentEdges);
@@ -161,10 +160,6 @@ export const useAutoSave = ({
       isSavingRef.current = true;
       clearIdleTimeout();
       setStatus("saving");
-
-      if (showToast) {
-        toast.loading("Saving...", { id: "save-status" });
-      }
 
       updateWorkflow.mutate(
         { id: workflowId, nodes: currentNodes, edges: currentEdges },
@@ -177,10 +172,6 @@ export const useAutoSave = ({
             setLastSavedAt(new Date());
             setStatus("saved");
 
-            if (showToast) {
-              toast.success("Saved", { id: "save-status", duration: 1500 });
-            }
-
             scheduleIdleTransition(3000);
           },
           onError: (error) => {
@@ -191,23 +182,11 @@ export const useAutoSave = ({
               const retryDelay = Math.min(1000 * Math.pow(2, retryCountRef.current), 10000);
 
               setStatus("saving");
-              toast.error(
-                `Save failed. Retrying in ${retryDelay / 1000}s... (${retryCountRef.current}/${maxRetries})`,
-                { id: "save-error", duration: retryDelay }
-              );
 
-              setTimeout(() => performSave(false), retryDelay);
+              setTimeout(() => performSave(), retryDelay);
             } else {
               setStatus("error");
               retryCountRef.current = 0;
-              toast.error(`Auto-save failed: ${error.message}`, {
-                id: "save-error",
-                action: {
-                  label: "Retry",
-                  onClick: () => performSave(true),
-                },
-                duration: 10000,
-              });
             }
           },
         }
@@ -236,9 +215,6 @@ export const useAutoSave = ({
 
     if (!isOnline) {
       setStatus("offline");
-      toast.error("You're offline. Changes will be saved when you reconnect.", {
-        id: "save-offline",
-      });
       return;
     }
 
@@ -254,13 +230,12 @@ export const useAutoSave = ({
       // No changes - just confirm saved state
       clearIdleTimeout();
       setStatus("saved");
-      toast.success("All changes saved", { id: "save-status", duration: 1500 });
       scheduleIdleTransition(3000);
       return;
     }
 
     // Perform the save
-    performSave(true);
+    performSave();
   }, [enabled, isOnline, performSave, clearIdleTimeout, scheduleIdleTransition]);
 
   // Initialize hashes on mount
@@ -302,7 +277,7 @@ export const useAutoSave = ({
 
     autoSaveTimeoutRef.current = setTimeout(() => {
       if (!isSavingRef.current) {
-        performSave(false); // Auto-save without toast
+        performSave();
       }
     }, saveDelay);
 

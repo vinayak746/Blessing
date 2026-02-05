@@ -1,6 +1,6 @@
 "use client";
 
-import { NodeToolbar, Position } from "@xyflow/react";
+import { NodeToolbar } from "@xyflow/react";
 import { SettingsIcon, TrashIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "./ui/button";
@@ -105,21 +105,20 @@ export const WorkflowNode = ({
           </Tooltip>
         </NodeToolbar>
       )}
-      {children}
-      {name && (
-        <NodeToolbar
-          position={Position.Bottom}
-          isVisible
-          className="max-w-[200px] text-center"
-        >
-          <p className="font-medium">{name}</p>
-          {description && (
-            <p className="text-sm truncate text-muted-foreground">
-              {description}
-            </p>
-          )}
-        </NodeToolbar>
-      )}
+      {/* Wrap children and label in a container so label scales with zoom */}
+      <div className="relative">
+        {children}
+        {name && (
+          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 text-center bg-background/95 backdrop-blur-sm rounded-md px-2.5 py-1.5 shadow-md border pointer-events-none">
+            <p className="font-medium text-xs leading-tight max-w-[180px] truncate">{name}</p>
+            {description && (
+              <p className="text-[10px] text-muted-foreground max-w-[180px] truncate mt-0.5">
+                {description}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 };

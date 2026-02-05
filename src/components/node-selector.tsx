@@ -189,10 +189,10 @@ export function NodeSelector({
         <div className="p-6 pb-0">
           <SheetHeader>
             <SheetTitle>Add a Node</SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-sm">
               <strong>Triggers</strong> start your workflow. <strong>Actions</strong> do the work.
-              <br />
-              <span className="text-xs">Connect them by dragging from right handle → left handle.</span>
+              <span className="hidden sm:inline"><br /></span>
+              <span className="sm:text-xs block sm:inline mt-1 sm:mt-0">Connect them by dragging from right handle → left handle.</span>
             </SheetDescription>
           </SheetHeader>
 

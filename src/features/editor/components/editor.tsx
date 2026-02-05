@@ -2,7 +2,7 @@
 
 import { ErrorView } from "@/components/entity-components";
 import { EditorSkeleton } from "@/components/skeletons";
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef, useDeferredValue } from "react";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -55,7 +55,7 @@ export const EditorError = () => {
 // Inner component that uses useReactFlow
 const EditorInner = ({ workflowId }: { workflowId: string }) => {
   const { data: workflow } = useSuspenseWorkflow(workflowId);
-  const { fitView } = useReactFlow();
+  const { fitView, zoomIn, zoomOut, getZoom, setViewport, getViewport } = useReactFlow();
 
   const setEditor = useSetAtom(editorAtom);
   const setEditorActions = useSetAtom(editorActionsAtom);
@@ -63,6 +63,10 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
 
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
+  
+  // Use deferred values for non-critical computations to reduce lag during dragging
+  const deferredNodes = useDeferredValue(nodes);
+  const deferredEdges = useDeferredValue(edges);
   
   // Beginner guide state
   const isNewUser = useIsNewUser();
@@ -76,14 +80,14 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
     }
   }, [isNewUser]);
 
-  // Workflow validation for beginner-friendly errors
-  const { issues, errors, warnings, infos, isValid, canExecute } = useWorkflowValidation(nodes, edges);
+  // Workflow validation for beginner-friendly errors (uses deferred values to reduce drag lag)
+  const { issues, errors, warnings, infos, isValid, canExecute } = useWorkflowValidation(deferredNodes, deferredEdges);
 
-  // Auto-save hook with optimized settings
+  // Auto-save hook with optimized settings (uses deferred values to reduce drag lag)
   const { status, save, hasUnsavedChanges, lastSavedAt } = useAutoSave({
     workflowId,
-    nodes,
-    edges,
+    nodes: deferredNodes,
+    edges: deferredEdges,
     delay: 3000,         // 3 seconds for structural changes
     positionDelay: 10000, // 10 seconds for position-only changes
     enabled: true,
@@ -211,7 +215,7 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
 
   // Handle fit view
   const handleFitView = useCallback(() => {
-    fitViewRef.current({ padding: 0.2, duration: 300 });
+    fitViewRef.current({ padding: 0, duration: 300, maxZoom: 2 });
   }, []);
 
   // Helper to check if target is an editable element
@@ -300,13 +304,13 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "0") {
         e.preventDefault();
         e.stopPropagation();
-        fitViewRef.current({ padding: 0.2, duration: 300 });
+        fitViewRef.current({ padding: 0, duration: 300, maxZoom: 2 });
         return;
       }
       if (e.key === "f" && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
-        fitViewRef.current({ padding: 0.2, duration: 300 });
+        fitViewRef.current({ padding: 0, duration: 300, maxZoom: 2 });
         return;
       }
       // Add node shortcut (Shift+A)
@@ -333,8 +337,66 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Custom wheel zoom handler for increased sensitivity
+  const handleWheel = useCallback((event: React.WheelEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      const zoomSensitivity = 0.008; // Increase this for faster zoom
+      const delta = -event.deltaY * zoomSensitivity;
+      const currentZoom = getZoom();
+      const newZoom = Math.min(Math.max(currentZoom * (1 + delta), 0.1), 4);
+      
+      const viewport = getViewport();
+      setViewport({ ...viewport, zoom: newZoom }, { duration: 0 });
+    }
+  }, [getZoom, getViewport, setViewport]);
+
+  // Custom pinch zoom handler for mobile with increased sensitivity
+  const lastPinchDistRef = useRef<number | null>(null);
+  
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    if (event.touches.length === 2) {
+      // Calculate distance between two touch points
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      const dist = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      
+      if (lastPinchDistRef.current !== null) {
+        const pinchSensitivity = 2.5; // Multiplier for pinch zoom speed
+        const delta = (dist - lastPinchDistRef.current) * 0.005 * pinchSensitivity;
+        const currentZoom = getZoom();
+        const newZoom = Math.min(Math.max(currentZoom * (1 + delta), 0.1), 4);
+        
+        const viewport = getViewport();
+        // Calculate center point between touches for zoom origin
+        const centerX = (touch1.clientX + touch2.clientX) / 2;
+        const centerY = (touch1.clientY + touch2.clientY) / 2;
+        
+        setViewport({ 
+          x: viewport.x - (centerX - viewport.x) * (newZoom / currentZoom - 1),
+          y: viewport.y - (centerY - viewport.y) * (newZoom / currentZoom - 1),
+          zoom: newZoom 
+        }, { duration: 0 });
+      }
+      
+      lastPinchDistRef.current = dist;
+    }
+  }, [getZoom, getViewport, setViewport]);
+  
+  const handleTouchEnd = useCallback(() => {
+    lastPinchDistRef.current = null;
+  }, []);
+
   return (
-    <div className="size-full">
+    <div 
+      className="size-full" 
+      onWheel={handleWheel}
+      onTouchMove={isMobile ? handleTouchMove : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -345,28 +407,40 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         nodeTypes={nodeComponents}
         onInit={setEditor}
         fitView
+        fitViewOptions={{ padding: 0, maxZoom: 2 }}
         snapGrid={[10, 10]}
         snapToGrid
         panOnScroll
-        panOnDrag={false}
+        panOnDrag={isMobile ? true : false}
         selectionOnDrag={!isMobile}
         nodesDraggable={true}
         edgesReconnectable
         edgesFocusable
         deleteKeyCode={["Backspace", "Delete"]}
-        // Mobile: use two-finger pan, one-finger node drag
+        // Mobile: two-finger pan via panOnScroll, one-finger for node drag
         zoomOnPinch={true}
+        zoomOnScroll={true}
+        zoomOnDoubleClick={true}
         panOnScrollMode={PanOnScrollMode.Free}
+        // Zoom settings - increase sensitivity
+        minZoom={0.1}
+        maxZoom={4}
+        // Performance optimizations
+        elevateNodesOnSelect={false}
+        elevateEdgesOnSelect={false}
       >
         <Background />
-        {/* Show smaller controls on mobile */}
-        <Controls className={isMobile ? "!left-2 !bottom-2 scale-90" : ""} />
+        {/* Show smaller controls on mobile, hide default fitView button */}
+        <Controls 
+          className={isMobile ? "!left-2 !bottom-2 scale-90" : ""} 
+          showFitView={false}
+        />
         {/* Hide MiniMap on mobile */}
         {!isMobile && <MiniMap className="!bottom-24" />}
 
         {/* Top-left: Save status (compact on mobile) */}
-        <Panel position="top-left" className={isMobile ? "!top-2 !left-2" : "!top-3 !left-14"}>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+        <Panel position="top-left" className={isMobile ? "!top-2 !left-2 max-w-[45vw]" : "!top-3 !left-14"}>
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <AutoSaveIndicator
               status={status}
               lastSavedAt={lastSavedAt}
@@ -384,31 +458,31 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         </Panel>
 
         {/* Top-right: Actions */}
-        <Panel position="top-right" className={isMobile ? "!top-2 !right-2" : ""}>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+        <Panel position="top-right" className={isMobile ? "!top-2 !right-2 max-w-[45vw]" : ""}>
+          <div className="flex items-center gap-1 sm:gap-2">
             <HelpButton />
-            {!isMobile && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleFitView}
-                className="size-8"
-                title="Fit view (F)"
-              >
-                <Maximize2 className="size-4" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleFitView}
+              className="size-8"
+              title="Fit view (F)"
+            >
+              <Maximize2 className="size-4" />
+            </Button>
             <AddNodeButton />
           </div>
         </Panel>
 
         {/* Execute button */}
         {hasManualTrigger && (
-          <Panel position="bottom-center" className={isMobile ? "!bottom-14" : ""}>
+          <Panel position="bottom-center" className={isMobile ? "!bottom-20" : ""}>
             <ExecuteWorkflowButton 
               workflowId={workflowId} 
               canExecute={canExecute}
               validationErrors={errors}
+              onSaveBeforeExecute={save}
+              hasUnsavedChanges={hasUnsavedChanges}
             />
           </Panel>
         )}

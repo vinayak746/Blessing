@@ -10,6 +10,7 @@ import {
   SaveIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect } from "react";
 import type { AutoSaveStatus } from "../hooks/use-auto-save";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,26 @@ export const AutoSaveIndicator = ({
   onSave,
   className,
 }: AutoSaveIndicatorProps) => {
+  // Track visibility - show only when saving, just saved, error, or unsaved
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+  
+  useEffect(() => {
+    if (status === "saved") {
+      setShowSavedIndicator(true);
+      const timer = setTimeout(() => {
+        setShowSavedIndicator(false);
+      }, 2500); // Hide after 2.5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  // Only show for: saving, saved (briefly), error, unsaved, offline
+  const shouldShow = status === "saving" || 
+                     (status === "saved" && showSavedIndicator) || 
+                     status === "error" || 
+                     status === "unsaved" ||
+                     status === "offline";
+
   const getStatusContent = () => {
     switch (status) {
       case "saving":
@@ -86,12 +107,17 @@ export const AutoSaveIndicator = ({
   const { icon, text, bgColor, textColor } = getStatusContent();
   const isClickable = status === "error" || status === "unsaved";
 
+  // Don't render if we shouldn't show
+  if (!shouldShow) {
+    return null;
+  }
+
   return (
     <button
       type="button"
       disabled={!isClickable}
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md border transition-all duration-200",
+        "inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md border transition-all duration-200 animate-in fade-in slide-in-from-left-2",
         bgColor,
         textColor,
         isClickable && "cursor-pointer hover:opacity-80 active:scale-95",

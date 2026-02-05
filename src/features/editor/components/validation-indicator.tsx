@@ -65,7 +65,10 @@ export function ValidationIndicator({
                     <div>
                       <p className="text-sm font-medium text-foreground">{info.message}</p>
                       {info.hint && (
-                        <p className="text-xs text-muted-foreground mt-1">{info.hint}</p>
+                        <p className="text-xs flex items-start gap-1.5 mt-2 px-2 py-1.5 rounded-md bg-muted/60 text-muted-foreground border border-border">
+                          <Lightbulb className="size-3 mt-0.5 shrink-0 text-primary" />
+                          <span>{info.hint}</span>
+                        </p>
                       )}
                     </div>
                   </div>
@@ -152,9 +155,9 @@ export function ValidationIndicator({
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-foreground">{error.message}</p>
                       {error.hint && (
-                        <p className="text-xs text-muted-foreground flex items-start gap-1">
-                          <Lightbulb className="size-3 mt-0.5 shrink-0 text-amber-500" />
-                          {error.hint}
+                        <p className="text-xs flex items-start gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-muted/60 text-muted-foreground border border-border">
+                          <Lightbulb className="size-3 mt-0.5 shrink-0 text-primary" />
+                          <span>{error.hint}</span>
                         </p>
                       )}
                     </div>
@@ -179,9 +182,9 @@ export function ValidationIndicator({
                     <div className="space-y-1">
                       <p className="text-sm text-foreground">{warning.message}</p>
                       {warning.hint && (
-                        <p className="text-xs text-muted-foreground flex items-start gap-1">
-                          <Lightbulb className="size-3 mt-0.5 shrink-0 text-amber-500" />
-                          {warning.hint}
+                        <p className="text-xs flex items-start gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-muted/60 text-muted-foreground border border-border">
+                          <Lightbulb className="size-3 mt-0.5 shrink-0 text-primary" />
+                          <span>{warning.hint}</span>
                         </p>
                       )}
                     </div>
