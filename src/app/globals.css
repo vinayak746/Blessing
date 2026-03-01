@@ -220,3 +220,8 @@ ol li::marker {
   content: counter(list-item) ". ";
   display: block;
 }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

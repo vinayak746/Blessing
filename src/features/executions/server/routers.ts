@@ -20,7 +20,8 @@ export const executionsRouter = createTRPCRouter({
               name:true,
             }
           }
-        }
+        },
+        omit: { errorStack: true },
       });
     }),
   getByWorkflow: protectedProcedure
