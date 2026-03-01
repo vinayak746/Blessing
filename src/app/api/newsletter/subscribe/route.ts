@@ -17,6 +17,13 @@ const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX = 5; // max 5 requests per window
 
+function cleanupRateLimitMap() {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (entry.resetAt <= now) rateLimitMap.delete(key);
+  }
+}
+
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
@@ -31,7 +38,8 @@ function isRateLimited(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  // Rate limiting
+  // Rate limiting (clean expired entries first)
+  cleanupRateLimitMap();
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (isRateLimited(ip)) {
@@ -88,13 +96,21 @@ export async function POST(req: NextRequest) {
     create: { email, name, confirmToken, unsubscribeToken },
   });
 
-  // Send branded confirmation email
+  // Send confirmation email — wrapped separately so DB write isn't lost
   const confirmUrl = `${BASE_URL}/api/newsletter/confirm?token=${confirmToken}`;
-  await sendMail({
-    to: email,
-    subject: "Confirm your Blessing newsletter subscription ✦",
-    html: confirmationEmail({ name, confirmUrl }),
-  });
+  try {
+    await sendMail({
+      to: email,
+      subject: "Confirm your Blessing newsletter subscription ✦",
+      html: confirmationEmail({ name, confirmUrl }),
+    });
+  } catch (mailErr) {
+    console.error("[newsletter/subscribe] Failed to send confirmation email:", mailErr);
+    return NextResponse.json(
+      { success: true, warning: "Subscribed but confirmation email could not be sent. Please try again." },
+      { status: 202 }
+    );
+  }
 
   return NextResponse.json({ success: true });
 }

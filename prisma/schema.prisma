@@ -197,4 +197,6 @@ model Subscriber {
   confirmToken      String   @unique
   unsubscribeToken  String   @unique
   createdAt         DateTime @default(now())
+
+  @@index([subscribed, createdAt])
 }

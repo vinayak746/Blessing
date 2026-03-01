@@ -50,6 +50,7 @@ export default function NewsletterSignup({ dark = false }: NewsletterSignupProps
       <input
         type="text"
         placeholder="Your first name (optional)"
+        aria-label="First name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors ${inputClass}`}

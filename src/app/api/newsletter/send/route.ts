@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -18,6 +19,63 @@ const VALID_TEMPLATE_IDS: TemplateId[] = [
   "custom",
 ];
 
+// ─── Zod schemas per template ────────────────────────────────────────
+
+const newFeatureSchema = z.object({
+  featureName: z.string().min(1),
+  description: z.string(),
+  benefits: z.array(z.string()),
+  ctaUrl: z.string().optional(),
+});
+
+const newIntegrationSchema = z.object({
+  appName: z.string().min(1),
+  description: z.string(),
+  automations: z.array(z.string()),
+});
+
+const tipItemSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+const tipsRoundupSchema = z.object({
+  intro: z.string(),
+  tips: z.array(tipItemSchema).min(1),
+});
+
+const updateItemSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+const productUpdateSchema = z.object({
+  intro: z.string(),
+  updates: z.array(updateItemSchema).min(1),
+  comingSoon: z.string(),
+});
+
+const customSchema = z.object({
+  heading: z.string(),
+  body: z.string(),
+  ctaText: z.string().optional(),
+  ctaUrl: z.string().optional(),
+});
+
+const templateDataSchemas: Record<TemplateId, z.ZodSchema> = {
+  "new-feature": newFeatureSchema,
+  "new-integration": newIntegrationSchema,
+  "tips-roundup": tipsRoundupSchema,
+  "product-update": productUpdateSchema,
+  custom: customSchema,
+};
+
+const sendBodySchema = z.object({
+  subject: z.string().min(1),
+  templateId: z.enum(["new-feature", "new-integration", "tips-roundup", "product-update", "custom"]),
+  data: z.record(z.string(), z.any()),
+});
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -25,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let body: { subject?: string; templateId?: string; data?: any };
+    let body: unknown;
     try {
       body = await req.json();
     } catch {
@@ -35,24 +93,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { subject, templateId, data } = body;
-    if (!subject || !templateId || !data) {
+    const parsed = sendBodySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing subject, templateId, or data" },
+        { error: "Missing or invalid subject, templateId, or data" },
         { status: 400 }
       );
     }
 
-    if (!VALID_TEMPLATE_IDS.includes(templateId as TemplateId)) {
+    const { subject, templateId, data } = parsed.data;
+
+    // Validate data shape against the template-specific schema
+    const dataSchema = templateDataSchemas[templateId];
+    const dataParsed = dataSchema.safeParse(data);
+    if (!dataParsed.success) {
       return NextResponse.json(
-        { error: "Invalid template ID" },
+        { error: "Invalid template data" },
         { status: 400 }
       );
     }
 
     const templateData: TemplateData = {
-      templateId: templateId as TemplateId,
-      data,
+      templateId,
+      data: dataParsed.data,
     } as TemplateData;
 
     // Get all confirmed subscribers

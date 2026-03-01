@@ -89,9 +89,12 @@ export default function NewsletterAdmin() {
 
   function handleTemplateChange(id: TemplateId) {
     setSelectedTemplate(id);
-    const tpl = NEWSLETTER_TEMPLATES.find((t) => t.id === id)!;
-    if (tpl.defaultSubject && !subject) setSubject(tpl.defaultSubject);
-    else if (tpl.defaultSubject) setSubject(tpl.defaultSubject);
+    const tpl = NEWSLETTER_TEMPLATES.find((t) => t.id === id);
+    // Only pre-fill subject when the field is still on the previous template's default
+    const currentDefault = NEWSLETTER_TEMPLATES.find((t) => t.id === selectedTemplate)?.defaultSubject;
+    if (tpl?.defaultSubject && (!subject || subject === currentDefault)) {
+      setSubject(tpl.defaultSubject);
+    }
   }
 
   // Build template data for the generator
@@ -182,8 +185,8 @@ export default function NewsletterAdmin() {
         <div className="space-y-5">
           {/* Template picker */}
           <div>
-            <label className={labelClass}>Template</label>
-            <div className="flex flex-wrap gap-2">
+            <label id="template-label" className={labelClass}>Template</label>
+            <div className="flex flex-wrap gap-2" role="group" aria-labelledby="template-label">
               {NEWSLETTER_TEMPLATES.map((t) => (
                 <button
                   key={t.id}
@@ -203,8 +206,9 @@ export default function NewsletterAdmin() {
 
           {/* Subject */}
           <div>
-            <label className={labelClass}>Subject Line</label>
+            <label htmlFor="subject-input" className={labelClass}>Subject Line</label>
             <input
+              id="subject-input"
               type="text"
               required
               placeholder="e.g. New in Blessing: AI Nodes"
@@ -378,9 +382,10 @@ function NewFeatureForm({
         <label className={sublabelClass}>Key Benefits</label>
         {data.benefits.map((b: string, i: number) => (
           <input
-            key={i}
+            key={`benefit-${i}`}
             type="text"
             placeholder={`Benefit ${i + 1}`}
+            aria-label={`Benefit ${i + 1}`}
             value={b}
             onChange={(e) => {
               const next = [...data.benefits];
@@ -451,9 +456,10 @@ function NewIntegrationForm({
         <label className={sublabelClass}>What Users Can Automate</label>
         {data.automations.map((a: string, i: number) => (
           <input
-            key={i}
+            key={`automation-${i}`}
             type="text"
             placeholder={`Automation example ${i + 1}`}
+            aria-label={`Automation example ${i + 1}`}
             value={a}
             onChange={(e) => {
               const next = [...data.automations];
@@ -504,7 +510,7 @@ function TipsRoundupForm({
       </div>
 
       {data.tips.map((tip, i) => (
-        <div key={i} className="bg-background rounded-lg p-3 space-y-2">
+        <div key={`tip-${i}`} className="bg-background rounded-lg p-3 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Tip {i + 1}</p>
           <input
             type="text"
@@ -565,7 +571,7 @@ function ProductUpdateForm({
       </div>
 
       {data.updates.map((u, i) => (
-        <div key={i} className="bg-background rounded-lg p-3 space-y-2">
+        <div key={`update-${i}`} className="bg-background rounded-lg p-3 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Update {i + 1}</p>
           <input
             type="text"

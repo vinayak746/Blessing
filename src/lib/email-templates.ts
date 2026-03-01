@@ -56,7 +56,7 @@ function safeUrl(url: string): string {
 }
 
 function link(text: string, url: string) {
-  return `<a href="${safeUrl(url)}" style="color:#1a1a1a;text-decoration:underline">${text}</a>`;
+  return `<a href="${safeUrl(url)}" style="color:#1a1a1a;text-decoration:underline">${esc(text)}</a>`;
 }
 
 // ─── Confirmation Email ──────────────────────────────────────────────
@@ -72,6 +72,7 @@ export function confirmationEmail(opts: {
 }) {
   const hi = opts.name ? esc(opts.name) : "there";
   const logoUrl = `${LOGO_BASE}/logos/logo.png`;
+  const safeConfirmUrl = safeUrl(opts.confirmUrl);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -96,7 +97,7 @@ export function confirmationEmail(opts: {
           <!-- Button -->
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
             <tr><td style="background:#111;border-radius:6px">
-              <a href="${opts.confirmUrl}" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none">Confirm my email</a>
+              <a href="${safeConfirmUrl}" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none">Confirm my email</a>
             </td></tr>
           </table>
 
@@ -288,7 +289,7 @@ function generateCustomText(d: CustomData): string {
   }
 
   if (d.ctaText && d.ctaUrl) {
-    lines.push(line(`${link(esc(d.ctaText), d.ctaUrl)}`));
+    lines.push(line(`${link(d.ctaText, d.ctaUrl)}`));
   }
 
   return lines.join("\n");
@@ -328,6 +329,7 @@ export function newsletterEmail(opts: {
   const hi = opts.name ? `Hey ${esc(opts.name)},` : "Hey,";
   const content = generateContentHtml(opts.templateData);
   const signoff = `<p style="margin:0 0 4px;font-size:15px;line-height:1.7;color:#1a1a1a">— Blessing</p>`;
+  const safeUnsubscribeUrl = safeUrl(opts.unsubscribeUrl);
 
   const body = `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#1a1a1a">${hi}</p>
@@ -337,7 +339,7 @@ export function newsletterEmail(opts: {
 
   const footer = `
     <p style="margin:0;font-size:12px;line-height:1.6;color:#999">You're receiving this because you subscribed to Blessing updates.</p>
-    <p style="margin:4px 0 0;font-size:12px;line-height:1.6"><a href="${opts.unsubscribeUrl}" style="color:#999;text-decoration:underline">Unsubscribe</a></p>
+    <p style="margin:4px 0 0;font-size:12px;line-height:1.6"><a href="${safeUnsubscribeUrl}" style="color:#999;text-decoration:underline">Unsubscribe</a></p>
   `;
 
   return plainLayout(body, footer);

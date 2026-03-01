@@ -35,7 +35,8 @@ export function middleware(req: NextRequest) {
 
   if (!sessionCookie?.value) {
     const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    const fullPath = pathname + (req.nextUrl.search || "");
+    loginUrl.searchParams.set("callbackUrl", fullPath);
     return NextResponse.redirect(loginUrl);
   }
 

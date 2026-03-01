@@ -30,15 +30,29 @@ export function LandingFooter() {
         {[
           {
             heading: "Product",
-            links: ["Features", "Integrations", "Changelog"],
+            links: [
+              { label: "Features", href: "/#features" },
+              { label: "Integrations", href: "/#integrations" },
+              { label: "Changelog", href: "/" },
+            ],
           },
           {
             heading: "Resources",
-            links: ["Documentation", "Blog", "Community", "Status"],
+            links: [
+              { label: "Documentation", href: "/" },
+              { label: "Blog", href: "/" },
+              { label: "Community", href: "/" },
+              { label: "Status", href: "/" },
+            ],
           },
           {
             heading: "Company",
-            links: ["About", "Contact", "Privacy", "Terms"],
+            links: [
+              { label: "About", href: "/" },
+              { label: "Contact", href: "/" },
+              { label: "Privacy", href: "/" },
+              { label: "Terms", href: "/" },
+            ],
           },
         ].map((col) => (
           <div key={col.heading} className="flex flex-col gap-3">
@@ -47,11 +61,11 @@ export function LandingFooter() {
             </h4>
             {col.links.map((l) => (
               <Link
-                key={l}
-                href="#"
+                key={l.label}
+                href={l.href}
                 className="text-sm hover:text-[#fdfaf3] transition-colors"
               >
-                {l}
+                {l.label}
               </Link>
             ))}
           </div>
