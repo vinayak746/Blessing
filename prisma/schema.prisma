@@ -187,3 +187,16 @@ model Execution {
   output Json?
 
 }
+
+model Subscriber {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String   @default("")
+  subscribed        Boolean  @default(false)
+  confirmedAt       DateTime?
+  confirmToken      String   @unique
+  unsubscribeToken  String   @unique
+  createdAt         DateTime @default(now())
+
+  @@index([subscribed, createdAt])
+}

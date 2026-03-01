@@ -20,7 +20,7 @@ export const executionsRouter = createTRPCRouter({
               name:true,
             }
           }
-        }
+        },
       });
     }),
   getByWorkflow: protectedProcedure
@@ -79,7 +79,8 @@ export const executionsRouter = createTRPCRouter({
                 name:true,
               }
             }
-          }
+          },
+          omit: { errorStack: true },
         }),
         prisma.execution.count({
           where: {

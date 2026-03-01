@@ -6,6 +6,7 @@ import {
   HistoryIcon,
   KeyIcon,
   LogOutIcon,
+  NewspaperIcon,
   StarIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -47,10 +48,11 @@ const menutItems = [
   },
 ];
 
-export const AppSidebar = () => {
+export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
+  const { data: session } = authClient.useSession();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -92,6 +94,21 @@ export const AppSidebar = () => {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      tooltip="Newsletter"
+                      isActive={pathname.startsWith("/newsletter-admin")}
+                      asChild
+                      className="gap-x-4 h-10 px-4"
+                    >
+                      <Link href="/newsletter-admin" prefetch>
+                        <NewspaperIcon className="size-4" />
+                        <span>Newsletter</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

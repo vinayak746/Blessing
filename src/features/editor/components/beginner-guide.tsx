@@ -149,8 +149,16 @@ export function BeginnerGuideDialog({ open, onOpenChange }: BeginnerGuideDialogP
   const isLastStep = currentStep === guideSteps.length - 1;
   const isFirstStep = currentStep === 0;
 
+  // Persist dismissal regardless of how the dialog is closed
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      localStorage.setItem(GUIDE_SHOWN_KEY, "true");
+    }
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden max-h-[90vh]">
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 border-b bg-muted/30">
