@@ -21,7 +21,6 @@ export const executionsRouter = createTRPCRouter({
             }
           }
         },
-        omit: { errorStack: true },
       });
     }),
   getByWorkflow: protectedProcedure

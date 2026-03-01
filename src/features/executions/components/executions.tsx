@@ -106,7 +106,7 @@ const getStatusIcon = (status: ExecutionStatus) => {
 const formatStatus = (status: ExecutionStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 }
-export const ExecutionItem = ({ data }: { data: Execution & {
+export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & {
   workflow: {
     id: string;
     name: string;
