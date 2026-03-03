@@ -13,12 +13,12 @@ export function LandingNewsletter() {
       <div
         aria-hidden
         className="pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#8B5A2B]/30 dark:bg-[#d4af37]/10 blur-3xl"
-        style={{ animation: "blobPulse 7s ease-in-out infinite", willChange: "transform" }}
+        style={{ animation: "blob-pulse 7s ease-in-out infinite", willChange: "transform" }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#d4af37]/20 dark:bg-[#d4af37]/8 blur-3xl"
-        style={{ animation: "blobPulseSlow 9s ease-in-out 1s infinite", willChange: "transform" }}
+        style={{ animation: "blob-pulse-slow 9s ease-in-out 1s infinite", willChange: "transform" }}
       />
 
       <div className="relative max-w-2xl mx-auto text-center flex flex-col items-center gap-6">

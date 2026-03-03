@@ -44,7 +44,7 @@ export function LandingHowItWorks() {
               key={s.step}
               className="relative bg-card border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 cursor-default"
             >
-              <span className="size-9 rounded-full bg-[#4A2010] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground text-sm font-bold flex items-center justify-center">
+              <span className="size-9 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
                 {s.step}
               </span>
               <span className="text-4xl">{s.emoji}</span>

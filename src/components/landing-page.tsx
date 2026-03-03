@@ -2,7 +2,8 @@ import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingHero } from "@/components/landing/hero";
 import dynamic from "next/dynamic";
 
-// Lazy-load below-fold sections — they ship zero JS until scrolled into view
+// Code-split below-fold sections — JS for each chunk is loaded in a separate
+// bundle but still server-rendered on first paint (ssr: true).
 const LandingFeatures = dynamic(() =>
   import("@/components/landing/features").then((m) => ({ default: m.LandingFeatures })),
   { ssr: true }

@@ -80,7 +80,7 @@ function TiltCard({
 function IconBadge({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      className="size-10 rounded-xl bg-accent dark:bg-[#2a2218] flex items-center justify-center"
+      className="size-10 rounded-xl bg-accent dark:bg-surface-icon flex items-center justify-center"
       whileHover={{ rotate: 15, scale: 1.15 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
@@ -92,7 +92,7 @@ function IconBadge({ children }: { children: ReactNode }) {
 function IconBadgeLg({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      className="size-11 rounded-xl bg-muted dark:bg-[#2a2218] flex items-center justify-center"
+      className="size-11 rounded-xl bg-muted dark:bg-surface-icon flex items-center justify-center"
       whileHover={{ rotate: 15, scale: 1.15 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
@@ -107,7 +107,7 @@ export function LandingFeatures() {
   return (
     <>
       {/* ── Why Blessing ── */}
-      <section id="features" className="py-24 px-6 bg-[#f9e6b5]/25 dark:bg-[#161210]">
+      <section id="features" className="py-24 px-6 bg-[#f9e6b5]/25 dark:bg-surface-elevated">
         <div className="max-w-7xl mx-auto">
           <FadeUp className="mb-14">
             <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary border border-border bg-card px-3 py-1 rounded-full mb-4">

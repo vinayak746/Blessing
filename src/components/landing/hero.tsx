@@ -72,24 +72,24 @@ export function LandingHero() {
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-[#f9e6b5] dark:bg-[#d4af37] blur-3xl opacity-60 dark:opacity-15"
-        style={{ animation: "scaleBreath 8s ease-in-out infinite", willChange: "transform" }}
+        style={{ animation: "scale-breath 8s ease-in-out infinite", willChange: "transform" }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute top-20 -left-32 size-72 rounded-full bg-[#e3d4aa] dark:bg-[#8B5A2B] blur-3xl opacity-30 dark:opacity-10"
-        style={{ animation: "driftLeft 10s ease-in-out infinite", willChange: "transform" }}
+        style={{ animation: "drift-left 10s ease-in-out infinite", willChange: "transform" }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute top-10 -right-32 size-72 rounded-full bg-[#d4af37] blur-3xl opacity-20 dark:opacity-10"
-        style={{ animation: "driftRight 12s ease-in-out infinite", willChange: "transform" }}
+        style={{ animation: "drift-right 12s ease-in-out infinite", willChange: "transform" }}
       />
 
       {/* ── Hero content with staggered fade-in ── */}
       <div className="relative max-w-4xl mx-auto flex flex-col items-center gap-6">
         <span
           className="inline-flex items-center gap-2 text-sm font-medium border border-border bg-card px-4 py-1.5 rounded-full text-primary"
-          style={{ animation: "fadeInUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.1s both", willChange: "transform, opacity" }}
+          style={{ animation: "fade-in-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.1s both", willChange: "transform, opacity" }}
         >
           <Zap className="size-3.5" />
           The new standard for workflow automation
@@ -97,7 +97,7 @@ export function LandingHero() {
 
         <h1
           className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight"
-          style={{ animation: "fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both", willChange: "transform, opacity" }}
+          style={{ animation: "fade-in-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both", willChange: "transform, opacity" }}
         >
           Automate your work.{" "}
           <span className="text-primary">Elevate your business.</span>
@@ -105,7 +105,7 @@ export function LandingHero() {
 
         <p
           className="max-w-xl text-lg text-muted-foreground"
-          style={{ animation: "fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.4s both", willChange: "transform, opacity" }}
+          style={{ animation: "fade-in-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.4s both", willChange: "transform, opacity" }}
         >
           Connect your apps, orchestrate complex workflows, and eliminate manual
           tasks with our intelligent automation engine. Built for teams that
@@ -114,7 +114,7 @@ export function LandingHero() {
 
         <div
           className="flex flex-col sm:flex-row items-center gap-3 mt-2"
-          style={{ animation: "fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s both", willChange: "transform, opacity" }}
+          style={{ animation: "fade-in-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s both", willChange: "transform, opacity" }}
         >
           <Link
             href="/signup"
@@ -135,11 +135,11 @@ export function LandingHero() {
       <div className="relative mt-20 w-full">
         <p
           className="text-center text-xs font-semibold tracking-widest uppercase text-muted-foreground dark:text-primary/80 mb-8"
-          style={{ animation: "fadeIn 0.8s ease 0.7s both" }}
+          style={{ animation: "fade-in 0.8s ease 0.7s both" }}
         >
           Connects with your favourite tools
         </p>
-        <div style={{ animation: "fadeIn 1s ease 0.9s both" }}>
+        <div style={{ animation: "fade-in 1s ease 0.9s both" }}>
           <InfiniteMarquee />
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   type NodeStatus,
   NodeStatusIndicator,
 } from "@/components/react-flow/node-status-indicator";
+import { needsDarkInvert } from "@/lib/utils";
 
 interface BaseExecutionNodeProps extends NodeProps {
   icon: LucideIcon | string;
@@ -21,8 +22,6 @@ interface BaseExecutionNodeProps extends NodeProps {
   onSettings?: () => void;
   onDoubleClick?: () => void;
 }
-
-const DARK_INVERT_LOGOS = ["/logos/openai.svg", "/logos/github.svg"];
 
 export const BaseExecutionNode = memo(
   ({
@@ -66,7 +65,7 @@ export const BaseExecutionNode = memo(
                   alt={name}
                   width={16}
                   height={16}
-                  className={DARK_INVERT_LOGOS.includes(Icon) ? "dark:invert" : ""}
+                  className={needsDarkInvert(Icon) ? "dark:invert" : ""}
                 />
               ) : (
                 <Icon className="size-4 text-muted-foreground" />

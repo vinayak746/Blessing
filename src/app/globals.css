@@ -66,6 +66,8 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-icon: var(--surface-icon);
 }
 
 :root {
@@ -131,6 +133,8 @@
   --minimap-node: #e2e2e2;
   --minimap-node-stroke: #555;
   --dot-color: #c5b99a;
+  --surface-elevated: #faf5e6;
+  --surface-icon: #f5efdf;
 }
 
 .dark {
@@ -152,6 +156,8 @@
   --border: #302618;
   --input: #2a2218;
   --ring: #d4af37;
+  --surface-elevated: #161210;
+  --surface-icon: #2a2218;
   --chart-1: #f1cb68;
   --chart-2: #d4af37;
   --chart-3: #b8992b;
@@ -214,7 +220,7 @@
   }
 }
 
-.react-flow__node.selected #base-node {
+.react-flow__node.selected [data-node-type="base-node"] {
   @apply ring-3 ring-muted-foreground/25 shadow-lg;
 }
 
@@ -303,50 +309,50 @@ ol li::marker {
 }
 
 /* ── Landing page CSS animations (replaces framer-motion) ── */
-@keyframes slideDown {
+@keyframes slide-down {
   from { opacity: 0; transform: translate3d(0, -64px, 0); }
   to   { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-@keyframes fadeInUp {
+@keyframes fade-in-up {
   from { opacity: 0; transform: translate3d(0, 36px, 0); }
   to   { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 /* Blob breathing — only scales, never touches opacity (let Tailwind own opacity) */
-@keyframes scaleBreath {
+@keyframes scale-breath {
   0%, 100% { transform: scale3d(1, 1, 1); }
   50%      { transform: scale3d(1.12, 1.12, 1); }
 }
 
-@keyframes driftLeft {
+@keyframes drift-left {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50%      { transform: translate3d(30px, -20px, 0); }
 }
 
-@keyframes driftRight {
+@keyframes drift-right {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50%      { transform: translate3d(-30px, 20px, 0); }
 }
 
-@keyframes blobPulse {
+@keyframes blob-pulse {
   0%, 100% { transform: scale3d(1, 1, 1); }
   50%      { transform: scale3d(1.2, 1.2, 1); }
 }
 
-@keyframes blobPulseSlow {
+@keyframes blob-pulse-slow {
   0%, 100% { transform: scale3d(1, 1, 1); }
   50%      { transform: scale3d(1.15, 1.15, 1); }
 }
 
 /* ── Utility classes ── */
 .animate-slide-down {
-  animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slide-down 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity;
 }
 
@@ -368,3 +374,33 @@ ol li::marker {
 .stagger-3 { transition-delay: 0.24s; }
 .stagger-4 { transition-delay: 0.32s; }
 .stagger-5 { transition-delay: 0.4s; }
+
+/* ── Accessibility: respect reduced-motion preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-down {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
+  }
+
+  .animate-fade-in-up {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: none;
+    will-change: auto;
+  }
+
+  .animate-fade-in-up.in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .stagger-1,
+  .stagger-2,
+  .stagger-3,
+  .stagger-4,
+  .stagger-5 {
+    transition-delay: 0s;
+  }
+}

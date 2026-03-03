@@ -29,7 +29,7 @@ export default function NewsletterUnsubscribed() {
         </p>
         <Link
           href="/"
-          className="mt-2 inline-flex items-center gap-2 bg-[#1a1408] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-[#8B5A2B] dark:hover:bg-[#c4a030] transition-colors"
+          className="mt-2 inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-primary/80 transition-colors"
         >
           Back to home
         </Link>

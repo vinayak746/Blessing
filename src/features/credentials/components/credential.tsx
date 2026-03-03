@@ -8,6 +8,7 @@ import {
   useSuspenseCredential,
 } from "../hooks/use-credentials";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
+import { needsDarkInvert } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { CredentialType } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -210,7 +211,7 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                                 alt={option.label}
                                 width={20}
                                 height={20}
-                                className={["/logos/openai.svg", "/logos/github.svg"].includes(option.logo) ? "dark:invert" : ""}
+                                className={needsDarkInvert(option.logo) ? "dark:invert" : ""}
                               />
                               {option.label}
                             </div>
