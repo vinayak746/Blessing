@@ -35,7 +35,7 @@ export default function NewsletterSignup({ dark = false }: NewsletterSignupProps
 
   if (status === "success") {
     return (
-      <p className={`text-sm font-medium ${dark ? "text-[#d4af37]" : "text-[#8B5A2B]"}`}>
+      <p className={`text-sm font-medium ${dark ? "text-[#d4af37]" : "text-primary"}`}>
         ✓ Check your inbox to confirm your subscription!
       </p>
     );
@@ -43,7 +43,7 @@ export default function NewsletterSignup({ dark = false }: NewsletterSignupProps
 
   const inputClass = dark
     ? "bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:border-[#d4af37]"
-    : "bg-[#fffdf6] border border-[#e3d4aa] text-[#1a1408] placeholder:text-[#746641] focus:border-[#8B5A2B]";
+    : "bg-card border border-border text-foreground placeholder:text-muted-foreground focus:border-primary";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
@@ -70,7 +70,7 @@ export default function NewsletterSignup({ dark = false }: NewsletterSignupProps
           className={`shrink-0 px-6 py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 ${
             dark
               ? "bg-[#d4af37] text-[#1a1408] hover:bg-[#c4a030]"
-              : "bg-[#1a1408] text-[#fdfaf3] hover:bg-[#8B5A2B]"
+              : "bg-foreground text-background hover:bg-primary"
           }`}
         >
           {status === "loading" ? "Subscribing…" : "Subscribe →"}

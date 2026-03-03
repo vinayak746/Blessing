@@ -13,11 +13,9 @@ HTMLAttributes<HTMLDivElement> {
 export function BaseNode({ className, status, ...props }: BaseNodeProps) {
   return (
     <div
+      data-node-type="base-node"
       className={cn(
-        "bg-card text-card-foreground relative rounded-sm border border-muted-foreground hover:bg-accent",
-        
-        
-      
+        "bg-card text-card-foreground relative rounded-sm border border-border hover:border-primary/50 hover:bg-accent",
         className,
       )}
       {...props}

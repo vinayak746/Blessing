@@ -38,6 +38,7 @@ import { KeyboardShortcutsModal } from "./keyboard-shortcuts-modal";
 import { ExecutionHistoryPanel } from "./execution-history-panel";
 import { useClipboard } from "../hooks/use-clipboard";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkflowValidation } from "../hooks/use-workflow-validation";
@@ -429,14 +430,21 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         elevateNodesOnSelect={false}
         elevateEdgesOnSelect={false}
       >
-        <Background />
+        <Background color="var(--dot-color)" />
         {/* Show smaller controls on mobile, hide default fitView button */}
         <Controls 
-          className={isMobile ? "!left-2 !bottom-2 scale-90" : ""} 
+          className={cn("dark:!bg-[#1c1610] dark:!border-[#302618] dark:!rounded-lg", isMobile ? "!left-2 !bottom-2 scale-90" : "")} 
           showFitView={false}
         />
         {/* Hide MiniMap on mobile */}
-        {!isMobile && <MiniMap className="!bottom-24" />}
+        {!isMobile && (
+          <MiniMap 
+            className="!bottom-24 dark:!bg-[#1c1610] dark:!border dark:!border-[#302618] dark:!rounded-lg"
+            maskColor="var(--minimap-mask, rgba(240, 240, 240, 0.6))"
+            nodeColor="var(--minimap-node, #e2e2e2)"
+            nodeStrokeColor="var(--minimap-node-stroke, #555)"
+          />
+        )}
 
         {/* Top-left: Save status (compact on mobile) */}
         <Panel position="top-left" className={isMobile ? "!top-2 !left-2 max-w-[45vw]" : "!top-3 !left-14"}>

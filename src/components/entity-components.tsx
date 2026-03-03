@@ -196,7 +196,7 @@ export const ErrorView = ({ message }: StateViewProps) => {
   return (
     <div className="flex justify-center items-center h-full  flex-1 flex-col gap-y-4">
       <AlertTriangleIcon className=" size-6 text-red-500" />
-      {!!message && <p className="text-sm text-black">{message}</p>}
+      {!!message && <p className="text-sm text-foreground">{message}</p>}
     </div>
   );
 };
@@ -329,7 +329,7 @@ export const EntityItem = ({
       <Link href={href} prefetch>
         <Card
           className={cn(
-            "p-4 shadow-none hover:shadow cursor-pointer",
+            "p-4 shadow-none hover:shadow cursor-pointer transition-all duration-200 hover:border-primary/60 dark:hover:border-primary/50 dark:hover:shadow-[0_0_12px_-3px] dark:hover:shadow-primary/20",
             isRemoving && "opacity-50 cursor-not-allowed",
             className,
           )}

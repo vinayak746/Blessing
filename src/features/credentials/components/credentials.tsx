@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
+import { needsDarkInvert } from "@/lib/utils";
 import {
   EmptyView,
   EntityContainer,
@@ -133,6 +134,7 @@ export const CredentialItem = ({ data }: { data: CredentialListItem }) => {
     removeCredential.mutate({ id: data.id });
   };
   const logo = credentialLogos[data.type] || "/logos/openai.svg";
+  const needsInvert = needsDarkInvert(logo);
   return (
     <EntityItem
       href={`/credentials/${data.id}`}
@@ -146,7 +148,7 @@ export const CredentialItem = ({ data }: { data: CredentialListItem }) => {
       }
       image={
         <div className="size-8 flex items-center justify-center">
-          <Image src={logo} alt={data.name} width={20} height={20} />
+          <Image src={logo} alt={data.name} width={20} height={20} className={needsInvert ? "dark:invert" : ""} />
         </div>
       }
       onRemove={handleRemove}

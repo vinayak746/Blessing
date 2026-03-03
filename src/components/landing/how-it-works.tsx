@@ -7,13 +7,13 @@ export function LandingHowItWorks() {
     <section id="how-it-works" className="py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <FadeUp className="mb-14">
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-[#8B5A2B] border border-[#e3d4aa] bg-[#fffdf6] px-3 py-1 rounded-full mb-4">
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary border border-border bg-card px-3 py-1 rounded-full mb-4">
             How it works
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mb-3">
             Automate in 3 Simple Steps
           </h2>
-          <p className="text-[#746641] max-w-lg">
+          <p className="text-muted-foreground max-w-lg">
             No developers needed. Go from idea to automated workflow in minutes
             with our intuitive visual builder.
           </p>
@@ -42,14 +42,14 @@ export function LandingHowItWorks() {
           ].map((s) => (
             <CardItem
               key={s.step}
-              className="relative bg-[#fffdf6] border border-[#e3d4aa] rounded-2xl p-8 flex flex-col items-center text-center gap-4 cursor-default"
+              className="relative bg-card border border-border rounded-2xl p-8 flex flex-col items-center text-center gap-4 cursor-default"
             >
-              <span className="size-9 rounded-full bg-[#4A2010] text-[#fdfaf3] text-sm font-bold flex items-center justify-center">
+              <span className="size-9 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
                 {s.step}
               </span>
               <span className="text-4xl">{s.emoji}</span>
               <h3 className="font-bold text-lg">{s.title}</h3>
-              <p className="text-sm text-[#746641] leading-relaxed">{s.desc}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
             </CardItem>
           ))}
         </StaggerGrid>

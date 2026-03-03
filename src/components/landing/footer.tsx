@@ -1,11 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 
 export function LandingFooter() {
   return (
-    <footer className="bg-[#12100c] text-[#c2ad7a] py-16 px-6 border-t border-[#3c321d]">
+    <footer className="bg-[#12100c] dark:bg-[#0a0805] text-[#c2ad7a] dark:text-[#a89668] py-16 px-6 border-t border-[#3c321d] dark:border-[#1f1a10]">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
         <div className="flex flex-col gap-4">
           <Link
@@ -72,7 +70,7 @@ export function LandingFooter() {
         ))}
       </div>
 
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-[#3c321d] text-xs text-center">
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-[#3c321d] dark:border-[#1f1a10] text-xs text-center">
         © {new Date().getFullYear()} Blessing. All rights reserved.
       </div>
     </footer>

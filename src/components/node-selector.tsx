@@ -5,6 +5,7 @@ import { useReactFlow } from "@xyflow/react";
 import { GlobeIcon, MousePointerIcon, SearchIcon, XIcon } from "lucide-react";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { needsDarkInvert } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -246,7 +247,7 @@ export function NodeSelector({
                           <img
                             src={Icon}
                             alt={nodeType.label}
-                            className="size-5 object-contain"
+                            className={`size-5 object-contain${needsDarkInvert(Icon) ? " dark:invert" : ""}`}
                           />
                         ) : (
                           <Icon className="size-5 text-foreground" />
@@ -288,7 +289,7 @@ export function NodeSelector({
                           <img
                             src={Icon}
                             alt={nodeType.label}
-                            className="size-5 object-contain"
+                            className={`size-5 object-contain${needsDarkInvert(Icon) ? " dark:invert" : ""}`}
                           />
                         ) : (
                           <Icon className="size-5 text-foreground" />

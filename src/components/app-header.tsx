@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { SearchIcon } from "lucide-react";
 import { useCommandPalette } from "@/components/command-palette";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const AppHeader = () => {
   const { setOpen } = useCommandPalette();
@@ -12,6 +13,7 @@ export const AppHeader = () => {
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background">
       <SidebarTrigger />
       <div className="flex-1" />
+      <ThemeToggle />
       <Button
         variant="outline"
         size="sm"

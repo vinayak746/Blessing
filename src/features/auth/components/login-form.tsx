@@ -109,13 +109,14 @@ export const LoginForm = () => {
                       src="/logos/github.svg"
                       width={20}
                       height={20}
+                      className="dark:invert"
                     />
                     Continue with Github
                   </Button>
                   <Button
                     onClick={signInGoogle}
                     variant="outline"
-                    className="w-full"
+                    className="w-full dark:border-primary/40 dark:hover:border-primary/70 dark:hover:bg-primary/10"
                     type="button"
                     disabled={isPending}
                   >
