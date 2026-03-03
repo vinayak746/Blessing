@@ -57,7 +57,7 @@ const defaults = {
 // ─── Shared input styles ─────────────────────────────────────────────
 
 const inputClass =
-  "w-full border border-border bg-card px-3.5 py-2.5 rounded-lg text-sm outline-none focus:border-[#8B5A2B] transition-colors placeholder:text-muted-foreground/50";
+  "w-full border border-border bg-card px-3.5 py-2.5 rounded-lg text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50";
 const labelClass = "text-sm font-medium text-foreground mb-1.5 block";
 const sublabelClass = "text-xs text-muted-foreground mb-1 block";
 
@@ -194,7 +194,7 @@ export default function NewsletterAdmin() {
                   onClick={() => handleTemplateChange(t.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     selectedTemplate === t.id
-                      ? "border-[#8B5A2B] bg-[#8B5A2B]/10 text-[#8B5A2B]"
+                      ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground hover:bg-accent"
                   }`}
                 >
@@ -256,7 +256,7 @@ export default function NewsletterAdmin() {
               <button
                 type="submit"
                 disabled={status === "loading" || !canSend}
-                className="flex-1 bg-[#1a1408] text-[#fdfaf3] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#8B5A2B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-foreground text-background px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "loading" ? "Sending…" : "Send to All Subscribers"}
               </button>
@@ -355,7 +355,7 @@ function NewFeatureForm({
 }) {
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-card/50">
-      <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wide">🚀 New Feature Details</p>
+      <p className="text-xs font-semibold text-primary uppercase tracking-wide">🚀 New Feature Details</p>
 
       <div>
         <label className={sublabelClass}>Feature Name *</label>
@@ -399,7 +399,7 @@ function NewFeatureForm({
           <button
             type="button"
             onClick={() => onChange({ benefits: [...data.benefits, ""] })}
-            className="text-xs text-[#8B5A2B] hover:underline"
+            className="text-xs text-primary hover:underline"
           >
             + Add another benefit
           </button>
@@ -429,7 +429,7 @@ function NewIntegrationForm({
 }) {
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-card/50">
-      <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wide">🔌 Integration Details</p>
+      <p className="text-xs font-semibold text-primary uppercase tracking-wide">🔌 Integration Details</p>
 
       <div>
         <label className={sublabelClass}>App / Service Name *</label>
@@ -473,7 +473,7 @@ function NewIntegrationForm({
           <button
             type="button"
             onClick={() => onChange({ automations: [...data.automations, ""] })}
-            className="text-xs text-[#8B5A2B] hover:underline"
+            className="text-xs text-primary hover:underline"
           >
             + Add another example
           </button>
@@ -497,7 +497,7 @@ function TipsRoundupForm({
 
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-card/50">
-      <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wide">💡 Tips</p>
+      <p className="text-xs font-semibold text-primary uppercase tracking-wide">💡 Tips</p>
 
       <div>
         <label className={sublabelClass}>Intro Text</label>
@@ -533,7 +533,7 @@ function TipsRoundupForm({
           onClick={() =>
             onChange({ tips: [...data.tips, { title: "", description: "" }] })
           }
-          className="text-xs text-[#8B5A2B] hover:underline"
+          className="text-xs text-primary hover:underline"
         >
           + Add another tip
         </button>
@@ -558,7 +558,7 @@ function ProductUpdateForm({
 
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-card/50">
-      <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wide">📦 Updates</p>
+      <p className="text-xs font-semibold text-primary uppercase tracking-wide">📦 Updates</p>
 
       <div>
         <label className={sublabelClass}>Intro Text</label>
@@ -596,7 +596,7 @@ function ProductUpdateForm({
               updates: [...data.updates, { title: "", description: "" }],
             })
           }
-          className="text-xs text-[#8B5A2B] hover:underline"
+          className="text-xs text-primary hover:underline"
         >
           + Add another update
         </button>
@@ -624,7 +624,7 @@ function CustomForm({
 }) {
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-card/50">
-      <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wide">✍️ Custom Email</p>
+      <p className="text-xs font-semibold text-primary uppercase tracking-wide">✍️ Custom Email</p>
 
       <div>
         <label className={sublabelClass}>Heading (optional)</label>

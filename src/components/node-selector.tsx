@@ -246,7 +246,7 @@ export function NodeSelector({
                           <img
                             src={Icon}
                             alt={nodeType.label}
-                            className="size-5 object-contain"
+                            className={`size-5 object-contain${["/logos/openai.svg", "/logos/github.svg"].includes(Icon) ? " dark:invert" : ""}`}
                           />
                         ) : (
                           <Icon className="size-5 text-foreground" />
@@ -288,7 +288,7 @@ export function NodeSelector({
                           <img
                             src={Icon}
                             alt={nodeType.label}
-                            className="size-5 object-contain"
+                            className={`size-5 object-contain${["/logos/openai.svg", "/logos/github.svg"].includes(Icon) ? " dark:invert" : ""}`}
                           />
                         ) : (
                           <Icon className="size-5 text-foreground" />

@@ -80,7 +80,7 @@ function TiltCard({
 function IconBadge({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      className="size-10 rounded-xl bg-[#f9e6b5] flex items-center justify-center"
+      className="size-10 rounded-xl bg-accent dark:bg-[#2a2218] flex items-center justify-center"
       whileHover={{ rotate: 15, scale: 1.15 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
@@ -92,7 +92,7 @@ function IconBadge({ children }: { children: ReactNode }) {
 function IconBadgeLg({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      className="size-11 rounded-xl bg-[#f5efdf] flex items-center justify-center"
+      className="size-11 rounded-xl bg-muted dark:bg-[#2a2218] flex items-center justify-center"
       whileHover={{ rotate: 15, scale: 1.15 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
@@ -107,16 +107,16 @@ export function LandingFeatures() {
   return (
     <>
       {/* ── Why Blessing ── */}
-      <section id="features" className="py-24 px-6 bg-[#f9e6b5]/25">
+      <section id="features" className="py-24 px-6 bg-[#f9e6b5]/25 dark:bg-[#161210]">
         <div className="max-w-7xl mx-auto">
           <FadeUp className="mb-14">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-[#8B5A2B] border border-[#e3d4aa] bg-[#fffdf6] px-3 py-1 rounded-full mb-4">
+            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary border border-border bg-card px-3 py-1 rounded-full mb-4">
               Why Blessing
             </span>
             <h2 className="text-4xl md:text-5xl font-bold mb-3">
               Everything You Need to Automate
             </h2>
-            <p className="text-[#746641] max-w-lg">
+            <p className="text-muted-foreground max-w-lg">
               From simple task triggers to complex multi-step workflows —
               Blessing gives you the tools to build automation that actually
               works.
@@ -148,11 +148,11 @@ export function LandingFeatures() {
             ].map((f) => (
               <TiltCard
                 key={f.title}
-                className="bg-[#fffdf6] border border-[#e3d4aa] rounded-2xl p-6 flex flex-col gap-4"
+                className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4"
               >
                 <IconBadge>{f.icon}</IconBadge>
                 <h3 className="font-bold text-base">{f.title}</h3>
-                <p className="text-sm text-[#746641] leading-relaxed">{f.desc}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </TiltCard>
             ))}
           </StaggerGrid>
@@ -166,7 +166,7 @@ export function LandingFeatures() {
             <h2 className="text-4xl md:text-5xl font-bold mb-3">
               Powerful Automation Nodes
             </h2>
-            <p className="text-[#746641] max-w-xl mx-auto">
+            <p className="text-muted-foreground max-w-xl mx-auto">
               Build sophisticated workflows using our library of pre-built
               connectors and intelligent logic controllers.
             </p>
@@ -192,11 +192,11 @@ export function LandingFeatures() {
             ].map((n) => (
               <TiltCard
                 key={n.title}
-                className="bg-[#fffdf6] border border-[#e3d4aa] rounded-2xl p-8 text-left flex flex-col gap-4"
+                className="bg-card border border-border rounded-2xl p-8 text-left flex flex-col gap-4"
               >
                 <IconBadgeLg>{n.icon}</IconBadgeLg>
                 <h3 className="font-bold text-lg">{n.title}</h3>
-                <p className="text-sm text-[#746641] leading-relaxed">{n.desc}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{n.desc}</p>
               </TiltCard>
             ))}
           </StaggerGrid>

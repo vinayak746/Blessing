@@ -3,7 +3,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators:false,
-  /* config options here */
+  experimental: {
+    // Tree-shake barrel exports from heavy packages
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-icons",
+      "date-fns",
+      "recharts",
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

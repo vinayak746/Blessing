@@ -127,66 +127,74 @@
     0px 8px 10px -1px hsl(38 30% 10% / 0.1);
   --shadow-2xl: 0px 1px 3px 0px hsl(38 30% 10% / 0.25);
   --tracking-normal: 0em;
+  --minimap-mask: rgba(240, 240, 240, 0.6);
+  --minimap-node: #e2e2e2;
+  --minimap-node-stroke: #555;
+  --dot-color: #c5b99a;
 }
 
 .dark {
-  --background: #0a0906;
-  --foreground: #f9f3d7;
-  --card: #12100c;
-  --card-foreground: #f9f3d7;
-  --popover: #16130d;
-  --popover-foreground: #f9f3d7;
-  --primary: #C4956A;
-  --primary-foreground: #1a1408;
-  --secondary: #3d3526;
-  --secondary-foreground: #f3e9cc;
-  --muted: #262115;
-  --muted-foreground: #c2ad7a;
-  --accent: #bca254;
-  --accent-foreground: #fffaf0;
-  --destructive: #b24a2f;
-  --border: #3c321d;
-  --input: #473b20;
-  --ring: #C4956A;
+  --background: #110e0a;
+  --foreground: #f5ecd4;
+  --card: #1c1610;
+  --card-foreground: #f5ecd4;
+  --popover: #1f1812;
+  --popover-foreground: #f5ecd4;
+  --primary: #d4af37;
+  --primary-foreground: #110e0a;
+  --secondary: #2a2218;
+  --secondary-foreground: #f0e4c8;
+  --muted: #231c14;
+  --muted-foreground: #a89668;
+  --accent: #3a2f1e;
+  --accent-foreground: #f5ecd4;
+  --destructive: #c0452a;
+  --border: #302618;
+  --input: #2a2218;
+  --ring: #d4af37;
   --chart-1: #f1cb68;
   --chart-2: #d4af37;
   --chart-3: #b8992b;
   --chart-4: #8f7535;
   --chart-5: #66543c;
-  --sidebar: #0e0c09;
-  --sidebar-foreground: #f9f3d7;
-  --sidebar-primary: #C4956A;
-  --sidebar-primary-foreground: #1a1408;
-  --sidebar-accent: #bca254;
-  --sidebar-accent-foreground: #fffaf0;
-  --sidebar-border: #3a301a;
-  --sidebar-ring: #C4956A;
+  --sidebar: #0e0b08;
+  --sidebar-foreground: #f5ecd4;
+  --sidebar-primary: #d4af37;
+  --sidebar-primary-foreground: #110e0a;
+  --sidebar-accent: #2a2218;
+  --sidebar-accent-foreground: #f5ecd4;
+  --sidebar-border: #281f14;
+  --sidebar-ring: #d4af37;
   --destructive-foreground: #fff5e8;
   --radius: 0.425rem;
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;
-  --shadow-color: hsl(38, 20%, 5%);
-  --shadow-opacity: 0.3;
+  --shadow-color: hsl(30, 30%, 3%);
+  --shadow-opacity: 0.4;
   --shadow-blur: 12px;
   --shadow-spread: 0px;
   --shadow-offset-x: 0px;
   --shadow-offset-y: 6px;
   --letter-spacing: 0em;
   --spacing: 0.25rem;
-  --shadow-2xs: 0px 1px 3px 0px hsl(38 20% 5% / 0.05);
-  --shadow-xs: 0px 1px 3px 0px hsl(38 20% 5% / 0.05);
-  --shadow-sm: 0px 1px 3px 0px hsl(38 20% 5% / 0.1),
-    0px 1px 2px -1px hsl(38 20% 5% / 0.1);
-  --shadow: 0px 1px 3px 0px hsl(38 20% 5% / 0.1),
-    0px 1px 2px -1px hsl(38 20% 5% / 0.1);
-  --shadow-md: 0px 1px 3px 0px hsl(38 20% 5% / 0.1),
-    0px 2px 4px -1px hsl(38 20% 5% / 0.1);
-  --shadow-lg: 0px 1px 3px 0px hsl(38 20% 5% / 0.1),
-    0px 4px 6px -1px hsl(38 20% 5% / 0.1);
-  --shadow-xl: 0px 1px 3px 0px hsl(38 20% 5% / 0.1),
-    0px 8px 10px -1px hsl(38 20% 5% / 0.1);
-  --shadow-2xl: 0px 1px 3px 0px hsl(38 20% 5% / 0.25);
+  --shadow-2xs: 0px 1px 2px 0px hsl(30 30% 3% / 0.15);
+  --shadow-xs: 0px 1px 3px 0px hsl(30 30% 3% / 0.2);
+  --shadow-sm: 0px 1px 3px 0px hsl(30 30% 3% / 0.25),
+    0px 1px 2px -1px hsl(30 30% 3% / 0.2);
+  --shadow: 0px 2px 4px 0px hsl(30 30% 3% / 0.3),
+    0px 1px 2px -1px hsl(30 30% 3% / 0.2);
+  --shadow-md: 0px 4px 6px -1px hsl(30 30% 3% / 0.3),
+    0px 2px 4px -2px hsl(30 30% 3% / 0.2);
+  --shadow-lg: 0px 8px 10px -3px hsl(30 30% 3% / 0.3),
+    0px 4px 6px -4px hsl(30 30% 3% / 0.2);
+  --shadow-xl: 0px 16px 20px -5px hsl(30 30% 3% / 0.3),
+    0px 8px 10px -6px hsl(30 30% 3% / 0.2);
+  --shadow-2xl: 0px 24px 40px -8px hsl(30 30% 3% / 0.45);
+  --minimap-mask: rgba(17, 14, 10, 0.75);
+  --minimap-node: #3a2f1e;
+  --minimap-node-stroke: #d4af37;
+  --dot-color: rgba(255, 255, 255, 0.25);
 }
 
 @layer base {
@@ -210,6 +218,73 @@
   @apply ring-3 ring-muted-foreground/25 shadow-lg;
 }
 
+/* ── ReactFlow dark mode overrides ── */
+.dark .react-flow__background {
+  background-color: var(--background) !important;
+}
+
+.dark .react-flow__minimap {
+  background-color: #1c1610 !important;
+  border: 1px solid #302618 !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.dark .react-flow__minimap-mask {
+  fill: rgba(17, 14, 10, 0.75) !important;
+}
+
+.dark .react-flow__minimap-node {
+  fill: #3a2f1e !important;
+  stroke: #d4af37 !important;
+  stroke-width: 1 !important;
+}
+
+.dark .react-flow__controls {
+  background-color: #1c1610 !important;
+  border: 1px solid #302618 !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .react-flow__controls-button {
+  background-color: #1c1610 !important;
+  border-bottom: 1px solid #302618 !important;
+  fill: #a89668 !important;
+  color: #a89668 !important;
+}
+
+.dark .react-flow__controls-button:hover {
+  background-color: #2a2218 !important;
+  fill: #d4af37 !important;
+  color: #d4af37 !important;
+}
+
+.dark .react-flow__controls-button svg {
+  fill: #a89668 !important;
+}
+
+.dark .react-flow__controls-button:hover svg {
+  fill: #d4af37 !important;
+}
+
+.dark .react-flow__edge-path {
+  stroke: #4a3d28;
+}
+
+.dark .react-flow__connection-line {
+  stroke: #d4af37;
+}
+
+.dark .react-flow__attribution {
+  background: transparent !important;
+}
+
+.dark .react-flow__attribution a {
+  color: #4a3d28 !important;
+}
+
 /* Remove marker dots from list items */
 ::marker {
   content: none;
@@ -221,7 +296,75 @@ ol li::marker {
   display: block;
 }
 
+/* ── Marquee (3 copies → shift by one-third for seamless loop) ── */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-33.3333%, 0, 0); }
 }
+
+/* ── Landing page CSS animations (replaces framer-motion) ── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translate3d(0, -64px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translate3d(0, 36px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Blob breathing — only scales, never touches opacity (let Tailwind own opacity) */
+@keyframes scaleBreath {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  50%      { transform: scale3d(1.12, 1.12, 1); }
+}
+
+@keyframes driftLeft {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(30px, -20px, 0); }
+}
+
+@keyframes driftRight {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(-30px, 20px, 0); }
+}
+
+@keyframes blobPulse {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  50%      { transform: scale3d(1.2, 1.2, 1); }
+}
+
+@keyframes blobPulseSlow {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  50%      { transform: scale3d(1.15, 1.15, 1); }
+}
+
+/* ── Utility classes ── */
+.animate-slide-down {
+  animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  transform: translate3d(0, 36px, 0);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.animate-fade-in-up.in-view {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.stagger-1 { transition-delay: 0.08s; }
+.stagger-2 { transition-delay: 0.16s; }
+.stagger-3 { transition-delay: 0.24s; }
+.stagger-4 { transition-delay: 0.32s; }
+.stagger-5 { transition-delay: 0.4s; }

@@ -1,17 +1,28 @@
-"use client";
-
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingHero } from "@/components/landing/hero";
-import { LandingFeatures } from "@/components/landing/features";
-import { LandingHowItWorks } from "@/components/landing/how-it-works";
-import { LandingNewsletter } from "@/components/landing/newsletter";
-import { LandingFooter } from "@/components/landing/footer";
-// To add pricing: import { LandingPricing } from "@/components/landing/pricing";
-// Then place <LandingPricing /> between <LandingHowItWorks /> and <LandingNewsletter />
+import dynamic from "next/dynamic";
 
-export default function LandingPageClient() {
+// Lazy-load below-fold sections — they ship zero JS until scrolled into view
+const LandingFeatures = dynamic(() =>
+  import("@/components/landing/features").then((m) => ({ default: m.LandingFeatures })),
+  { ssr: true }
+);
+const LandingHowItWorks = dynamic(() =>
+  import("@/components/landing/how-it-works").then((m) => ({ default: m.LandingHowItWorks })),
+  { ssr: true }
+);
+const LandingNewsletter = dynamic(() =>
+  import("@/components/landing/newsletter").then((m) => ({ default: m.LandingNewsletter })),
+  { ssr: true }
+);
+const LandingFooter = dynamic(() =>
+  import("@/components/landing/footer").then((m) => ({ default: m.LandingFooter })),
+  { ssr: true }
+);
+
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#fdfaf3] text-[#1a1408] font-sans overflow-x-hidden scroll-smooth">
+    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden scroll-smooth">
       <LandingNavbar />
       <LandingHero />
       <LandingFeatures />

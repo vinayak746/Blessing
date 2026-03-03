@@ -1,29 +1,52 @@
 "use client";
 
-import { motion, useInView } from "motion/react";
-import { useRef } from "react";
+import { useRef, useEffect, type ReactNode } from "react";
+
+/** Lightweight IntersectionObserver hook — fires once */
+function useInView(ref: React.RefObject<HTMLElement | null>, margin = "-80px") {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add("in-view");
+          io.disconnect();
+        }
+      },
+      { rootMargin: margin, threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, margin]);
+}
 
 export function FadeUp({
   children,
   delay = 0,
   className,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   delay?: number;
   className?: string;
 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const ref = useRef<HTMLDivElement>(null);
+  useInView(ref);
+
+  const delayClass =
+    delay >= 0.5 ? "stagger-5" :
+    delay >= 0.35 ? "stagger-4" :
+    delay >= 0.3 ? "stagger-3" :
+    delay >= 0.2 ? "stagger-2" :
+    delay >= 0.1 ? "stagger-1" : "";
+
   return (
-    <motion.div
+    <div
       ref={ref}
-      className={className}
-      initial={{ opacity: 0, y: 36 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={`animate-fade-in-up ${delayClass} ${className ?? ""}`}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -31,24 +54,16 @@ export function StaggerGrid({
   children,
   className,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const ref = useRef<HTMLDivElement>(null);
+  useInView(ref);
+
   return (
-    <motion.div
-      ref={ref}
-      className={className}
-      initial="hidden"
-      animate={inView ? "show" : "hidden"}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: 0.1 } },
-      }}
-    >
+    <div ref={ref} className={`animate-fade-in-up ${className ?? ""}`}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -56,23 +71,12 @@ export function CardItem({
   children,
   className,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-        },
-      }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-    >
+    <div className={`transition-transform duration-200 ease-out hover:-translate-y-1 will-change-transform ${className ?? ""}`}>
       {children}
-    </motion.div>
+    </div>
   );
 }

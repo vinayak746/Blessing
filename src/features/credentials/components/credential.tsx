@@ -210,6 +210,7 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                                 alt={option.label}
                                 width={20}
                                 height={20}
+                                className={["/logos/openai.svg", "/logos/github.svg"].includes(option.logo) ? "dark:invert" : ""}
                               />
                               {option.label}
                             </div>

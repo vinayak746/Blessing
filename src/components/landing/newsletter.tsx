@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import NewsletterSignup from "@/components/newsletter-signup";
 import { FadeUp } from "./motion-helpers";
 
@@ -8,29 +7,23 @@ export function LandingNewsletter() {
   return (
     <section
       id="newsletter"
-      className="relative py-28 px-6 overflow-hidden bg-[#1a1408] text-[#fdfaf3]"
+      className="relative py-28 px-6 overflow-hidden bg-[#1a1408] dark:bg-[#0a0805] text-[#fdfaf3]"
     >
-      <motion.div
+      {/* CSS-only animated blobs */}
+      <div
         aria-hidden
-        className="pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#8B5A2B]/30 blur-3xl"
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#8B5A2B]/30 dark:bg-[#d4af37]/10 blur-3xl"
+        style={{ animation: "blobPulse 7s ease-in-out infinite", willChange: "transform" }}
       />
-      <motion.div
+      <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#d4af37]/20 blur-3xl"
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{
-          duration: 9,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
+        className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 size-72 rounded-full bg-[#d4af37]/20 dark:bg-[#d4af37]/8 blur-3xl"
+        style={{ animation: "blobPulseSlow 9s ease-in-out 1s infinite", willChange: "transform" }}
       />
 
       <div className="relative max-w-2xl mx-auto text-center flex flex-col items-center gap-6">
         <FadeUp>
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase border border-[#e3d4aa]/30 bg-white/5 px-3 py-1 rounded-full text-[#d4af37] mb-2">
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase border border-[#e3d4aa]/30 dark:border-[#d4af37]/20 bg-white/5 px-3 py-1 rounded-full text-[#d4af37] mb-2">
             Stay in the loop
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mt-2">
@@ -46,15 +39,11 @@ export function LandingNewsletter() {
           <NewsletterSignup dark />
         </FadeUp>
 
-        <motion.p
-          className="text-xs text-[#746641]"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-        >
-          Unsubscribe anytime. We respect your privacy.
-        </motion.p>
+        <FadeUp delay={0.3}>
+          <p className="text-xs text-[#746641] dark:text-[#6b5d3f]">
+            Unsubscribe anytime. We respect your privacy.
+          </p>
+        </FadeUp>
       </div>
     </section>
   );

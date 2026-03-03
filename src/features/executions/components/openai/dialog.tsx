@@ -148,6 +148,7 @@ export const OpenAiDialog = ({
                               alt="OpenAI"
                               width={20}
                               height={20}
+                              className="dark:invert"
                             />
                             {credential.name}
                           </div>

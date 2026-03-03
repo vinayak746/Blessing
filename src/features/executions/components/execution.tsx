@@ -127,10 +127,10 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </div>
         </div>
         {execution.error && (
-          <div className="mt-6 p-4 bg-red-50 rounded-md space-y-3">
+          <div className="mt-6 p-4 bg-red-50 dark:bg-card rounded-lg border border-red-200 dark:border-destructive/30 space-y-3">
             <div>
-              <p className="text-sm font-medium text-red-900 mb-2">Error</p>
-              <p className="text-sm text-red-800 font-mono">
+              <p className="text-sm font-medium text-red-900 dark:text-destructive mb-2">Error</p>
+              <p className="text-sm text-red-800 dark:text-muted-foreground font-mono">
                 {execution.error}
               </p>
             </div>
@@ -143,13 +143,13 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-900 hover:bg-red-100"
+                    className="text-red-900 dark:text-primary hover:bg-red-100 dark:hover:bg-accent"
                   >
                     {showStackTrace ? "Hide stack trace" : "Show stack trace"}
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <pre className="text-xs font-mono text-red-800 overflow-auto mt-2 p-2 bg-red-100 rounded">
+                  <pre className="text-xs font-mono text-red-800 dark:text-muted-foreground/80 overflow-auto mt-2 p-3 bg-red-100 dark:bg-muted rounded-md border dark:border-border">
                     {execution.errorStack}
                   </pre>
                 </CollapsibleContent>

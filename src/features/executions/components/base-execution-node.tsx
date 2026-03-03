@@ -22,6 +22,8 @@ interface BaseExecutionNodeProps extends NodeProps {
   onDoubleClick?: () => void;
 }
 
+const DARK_INVERT_LOGOS = ["/logos/openai.svg", "/logos/github.svg"];
+
 export const BaseExecutionNode = memo(
   ({
     id,
@@ -59,7 +61,13 @@ export const BaseExecutionNode = memo(
           <BaseNode status={status} onDoubleClick={onDoubleClick}>
             <BaseNodeContent>
               {typeof Icon === "string" ? (
-                <Image src={Icon} alt={name} width={16} height={16} />
+                <Image
+                  src={Icon}
+                  alt={name}
+                  width={16}
+                  height={16}
+                  className={DARK_INVERT_LOGOS.includes(Icon) ? "dark:invert" : ""}
+                />
               ) : (
                 <Icon className="size-4 text-muted-foreground" />
               )}
