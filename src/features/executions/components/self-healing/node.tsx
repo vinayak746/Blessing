@@ -4,7 +4,7 @@ import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { ShieldAlertIcon } from "lucide-react";
 import { memo, useState } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
-import { SelfHealingDialog, type SelfHealingFormValues } from "./dialog";
+import { SelfHealingDialog, type SelfHealingFormValues, PROVIDER_LABELS } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchSelfHealingRealtimeToken } from "./actions";
 import { SELF_HEALING_CHANNEL_NAME } from "@/inngest/channels/self-healing";
@@ -58,14 +58,8 @@ export const SelfHealingNode = memo(
 
     const nodeData = props.data;
 
-    const providerLabels: Record<string, string> = {
-      OPENAI: "GPT-4o mini",
-      ANTHROPIC: "Claude 3.5",
-      GEMINI: "Gemini 2.0",
-    };
-
     const description = nodeData?.aiProvider
-      ? `${providerLabels[nodeData.aiProvider] || nodeData.aiProvider} · ${nodeData.maxAttempts || 3} attempts`
+      ? `${PROVIDER_LABELS[nodeData.aiProvider] || nodeData.aiProvider} · ${nodeData.maxAttempts || 3} attempts`
       : "Not configured";
 
     return (

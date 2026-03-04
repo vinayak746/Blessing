@@ -397,8 +397,8 @@ export async function attemptHealing({
 
     currentNodeData = { ...currentNodeData, ...safeChanges };
 
-    // Backoff between attempts (skip on first)
-    if (attempt > 1) {
+    // Backoff between attempts (including first retry — this IS already a retry)
+    if (attempt >= 1) {
       await step.sleep(`healing-backoff-${attempt}`, `${attempt * 2}s`);
     }
 

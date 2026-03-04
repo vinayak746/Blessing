@@ -92,20 +92,28 @@ export const executeWorkflow = inngest.createFunction(
       );
       if (selfHealingNodes.length === 0) return {} as Record<string, { healerNodeId: string; healerConfig: HealerConfig }>;
 
+      const healerIds = selfHealingNodes.map((n) => n.id);
+      const connections = await prisma.connection.findMany({
+        where: { fromNodeId: { in: healerIds } },
+        select: { fromNodeId: true, toNodeId: true },
+      });
+
+      const configById = Object.fromEntries(
+        selfHealingNodes.map((n) => [n.id, (n.data || {}) as HealerConfig])
+      );
+
       const map: Record<string, { healerNodeId: string; healerConfig: HealerConfig }> = {};
 
-      for (const healerNode of selfHealingNodes) {
-        const connections = await prisma.connection.findMany({
-          where: { fromNodeId: healerNode.id },
-          select: { toNodeId: true },
-        });
-
-        for (const conn of connections) {
-          map[conn.toNodeId] = {
-            healerNodeId: healerNode.id,
-            healerConfig: (healerNode.data || {}) as HealerConfig,
-          };
+      for (const conn of connections) {
+        if (map[conn.toNodeId]) {
+          throw new Error(
+            `Node ${conn.toNodeId} is protected by multiple self-healing nodes (${map[conn.toNodeId].healerNodeId} and ${conn.fromNodeId}). Each node may only have one self-healing parent.`
+          );
         }
+        map[conn.toNodeId] = {
+          healerNodeId: conn.fromNodeId,
+          healerConfig: configById[conn.fromNodeId],
+        };
       }
 
       return map;
@@ -170,28 +178,49 @@ export const executeWorkflow = inngest.createFunction(
         })
       );
 
-      const result = await attemptHealing({
-        healerConfig: healer.healerConfig,
-        targetNodeData: node.data as Record<string, unknown>,
-        targetNodeId: node.id,
-        targetExecutor: executor,
-        initialError: targetError,
-        userId,
-        context,
-        step,
-        publish,
-      });
+      let result: Awaited<ReturnType<typeof attemptHealing>>;
+      try {
+        result = await attemptHealing({
+          healerConfig: healer.healerConfig,
+          targetNodeData: node.data as Record<string, unknown>,
+          targetNodeId: node.id,
+          targetExecutor: executor,
+          initialError: targetError,
+          userId,
+          context,
+          step,
+          publish,
+        });
+      } catch (healingCrash) {
+        await publish(
+          selfHealingChannel().status({
+            nodeId: healer.healerNodeId,
+            status: "error",
+          })
+        );
+        throw healingCrash;
+      }
 
       if (result.healed) {
         context = result.context;
-        // Add healing metadata to context under the healer's variable name
+        // Merge healing metadata into context under the healer's variable name
         const varName = healer.healerConfig.variableName;
         if (varName) {
+          const sanitizedLog = result.log.map(({ attempt, analysis, confidence, changes }) => ({
+            attempt,
+            analysis,
+            confidence,
+            changes,
+          }));
+          const existing = typeof context[varName] === "object" && context[varName] !== null
+            ? context[varName] as Record<string, unknown>
+            : {};
           context[varName] = {
+            ...existing,
             selfHealing: {
               healed: true,
               attempts: result.attempts,
-              log: result.log,
+              log: sanitizedLog,
             },
           };
         }
@@ -205,12 +234,22 @@ export const executeWorkflow = inngest.createFunction(
         // Healing failed — add metadata and publish error
         const varName = healer.healerConfig.variableName;
         if (varName) {
+          const sanitizedLog = result.log.map(({ attempt, analysis, confidence, changes }) => ({
+            attempt,
+            analysis,
+            confidence,
+            changes,
+          }));
+          const existing = typeof context[varName] === "object" && context[varName] !== null
+            ? context[varName] as Record<string, unknown>
+            : {};
           context[varName] = {
+            ...existing,
             selfHealing: {
               healed: false,
               attempts: result.attempts,
               maxAttempts: result.maxAttempts,
-              log: result.log,
+              log: sanitizedLog,
             },
           };
         }

@@ -18,6 +18,10 @@ import { NodeType } from "@prisma/client";
 import { Separator } from "./ui/separator";
 import { ShieldAlertIcon } from "lucide-react";
 
+/** Logos that need `dark:invert` to remain visible in dark mode */
+const darkInvertLogos = new Set(["/logos/openai.svg", "/logos/anthropic.svg"]);
+const needsDarkInvert = (icon: string) => darkInvertLogos.has(icon);
+
 export type NodeTypeOption = {
   type: NodeType;
   label: string;
@@ -257,9 +261,15 @@ export function NodeSelector({
                   return (
                     <div
                       key={nodeType.type}
+                      role="button"
+                      tabIndex={0}
                       className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
-                        hover:bg-accent transition-all duration-150"
+                        hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150"
                       onClick={() => handleNodeSelect(nodeType)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleNodeSelect(nodeType);
+                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                      }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
                         {typeof Icon === "string" ? (
@@ -299,9 +309,15 @@ export function NodeSelector({
                   return (
                     <div
                       key={nodeType.type}
+                      role="button"
+                      tabIndex={0}
                       className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
-                        hover:bg-accent transition-all duration-150"
+                        hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150"
                       onClick={() => handleNodeSelect(nodeType)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleNodeSelect(nodeType);
+                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                      }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
                         {typeof Icon === "string" ? (
@@ -341,9 +357,15 @@ export function NodeSelector({
                   return (
                     <div
                       key={nodeType.type}
+                      role="button"
+                      tabIndex={0}
                       className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
-                        hover:bg-accent transition-all duration-150"
+                        hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150"
                       onClick={() => handleNodeSelect(nodeType)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleNodeSelect(nodeType);
+                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                      }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-amber-500/10 border border-amber-500/30 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 transition-colors">
                         {typeof Icon === "string" ? (

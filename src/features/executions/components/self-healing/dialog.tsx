@@ -31,7 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
@@ -79,6 +79,28 @@ const providerLogos: Record<string, string> = {
   GEMINI: "/logos/gemini.svg",
 };
 
+export const PROVIDER_LABELS: Record<string, string> = {
+  OPENAI: "GPT-4o mini",
+  ANTHROPIC: "Claude 3.5",
+  GEMINI: "Gemini 2.0",
+};
+
+function normalizeSelfHealingDefaults(
+  vals: Partial<SelfHealingFormValues>
+): SelfHealingFormValues {
+  return {
+    variableName: vals.variableName || "",
+    credentialId: vals.credentialId || "",
+    aiProvider: vals.aiProvider || "OPENAI",
+    maxAttempts: vals.maxAttempts || 3,
+    allowModifyBody: vals.allowModifyBody ?? true,
+    allowModifyEndpoint: vals.allowModifyEndpoint ?? false,
+    allowModifyPrompt: vals.allowModifyPrompt ?? true,
+    allowModifyHeaders: vals.allowModifyHeaders ?? false,
+    healingInstructions: vals.healingInstructions || "",
+  };
+}
+
 export const SelfHealingDialog = ({
   open,
   onOpenChange,
@@ -87,32 +109,12 @@ export const SelfHealingDialog = ({
 }: Props) => {
   const form = useForm<SelfHealingFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      variableName: defaultValues.variableName || "",
-      credentialId: defaultValues.credentialId || "",
-      aiProvider: defaultValues.aiProvider || "OPENAI",
-      maxAttempts: defaultValues.maxAttempts || 3,
-      allowModifyBody: defaultValues.allowModifyBody ?? true,
-      allowModifyEndpoint: defaultValues.allowModifyEndpoint ?? false,
-      allowModifyPrompt: defaultValues.allowModifyPrompt ?? true,
-      allowModifyHeaders: defaultValues.allowModifyHeaders ?? false,
-      healingInstructions: defaultValues.healingInstructions || "",
-    },
+    defaultValues: normalizeSelfHealingDefaults(defaultValues),
   });
 
   useEffect(() => {
     if (open) {
-      form.reset({
-        variableName: defaultValues.variableName || "",
-        credentialId: defaultValues.credentialId || "",
-        aiProvider: defaultValues.aiProvider || "OPENAI",
-        maxAttempts: defaultValues.maxAttempts || 3,
-        allowModifyBody: defaultValues.allowModifyBody ?? true,
-        allowModifyEndpoint: defaultValues.allowModifyEndpoint ?? false,
-        allowModifyPrompt: defaultValues.allowModifyPrompt ?? true,
-        allowModifyHeaders: defaultValues.allowModifyHeaders ?? false,
-        healingInstructions: defaultValues.healingInstructions || "",
-      });
+      form.reset(normalizeSelfHealingDefaults(defaultValues));
     }
   }, [open, defaultValues, form]);
 
@@ -122,9 +124,13 @@ export const SelfHealingDialog = ({
   const { data: credentials, isLoading: isLoadingCredentials } =
     useCredentialsByType(credentialType);
 
-  // Reset credential when provider changes
+  // Reset credential only when provider actually changes, not on mount
+  const prevProvider = useRef<string | undefined>(undefined);
   useEffect(() => {
-    form.setValue("credentialId", "");
+    if (prevProvider.current !== undefined && prevProvider.current !== watchProvider) {
+      form.setValue("credentialId", "");
+    }
+    prevProvider.current = watchProvider;
   }, [watchProvider, form]);
 
   const watchVariableName = form.watch("variableName") || "healer";
@@ -181,7 +187,7 @@ export const SelfHealingDialog = ({
                   <FormLabel>AI Provider</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -199,11 +205,7 @@ export const SelfHealingDialog = ({
                                 width={18}
                                 height={18}
                               />
-                              {provider === "OPENAI"
-                                ? "OpenAI (GPT-4o mini)"
-                                : provider === "ANTHROPIC"
-                                  ? "Anthropic (Claude 3.5 Sonnet)"
-                                  : "Google (Gemini 2.0 Flash)"}
+                              {PROVIDER_LABELS[provider]}
                             </div>
                           </SelectItem>
                         )

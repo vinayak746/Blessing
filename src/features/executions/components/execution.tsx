@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { FormatDistanceFn, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -54,11 +54,21 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
   const { data: execution } = useSuspenseExecution(executionId);
   const [showStackTrace, setShowStackTrace] = useState(false);
   const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Clipboard API unavailable or permission denied — silently fail
     });
   }, []);
 
@@ -167,7 +177,9 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             )}
           </div>
         )}
-        {execution.output && (
+        {execution.output && (() => {
+          const formattedOutput = formatOutput(execution.output);
+          return (
             <div className="mt-6 p-4 bg-muted rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium">Output</p>
@@ -175,7 +187,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                     variant="ghost"
                     size="sm"
                     className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => handleCopy(formatOutput(execution.output))}
+                    onClick={() => handleCopy(formattedOutput)}
                   >
                     {copied ? (
                       <>
@@ -191,10 +203,11 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                   </Button>
                 </div>
                 <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap">
-                  {formatOutput(execution.output)}
+                  {formattedOutput}
                 </pre>
             </div>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );
