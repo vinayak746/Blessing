@@ -90,6 +90,45 @@ function createPrefixedStep(step: any, prefix: string): any {
 }
 
 // ---------------------------------------------------------------------------
+// Deep-redact sensitive values before sending node data to AI providers
+// ---------------------------------------------------------------------------
+
+const SENSITIVE_KEY_PATTERN =
+  /credential|secret|token|password|authorization|apikey|api_key|auth|private/i;
+
+const SENSITIVE_VALUE_PATTERN =
+  /^(Bearer |Basic |sk-|ghp_|gho_|xox[bpas]-|eyJ)/;
+
+const REDACTED = "[REDACTED]";
+
+function redactSensitiveFields(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => redactSensitiveFields(item));
+  }
+
+  if (typeof obj === "object") {
+    const record = obj as Record<string, unknown>;
+    for (const key of Object.keys(record)) {
+      if (SENSITIVE_KEY_PATTERN.test(key)) {
+        record[key] = REDACTED;
+      } else if (
+        typeof record[key] === "string" &&
+        SENSITIVE_VALUE_PATTERN.test(record[key] as string)
+      ) {
+        record[key] = REDACTED;
+      } else {
+        record[key] = redactSensitiveFields(record[key]);
+      }
+    }
+    return record;
+  }
+
+  return obj;
+}
+
+// ---------------------------------------------------------------------------
 // Prompt builders
 // ---------------------------------------------------------------------------
 
@@ -134,9 +173,8 @@ function buildUserPrompt(
     changes: Record<string, unknown>;
   }>
 ): string {
-  // Strip credential values before sending to AI
-  const safe = { ...nodeData };
-  delete safe.credentialId;
+  // Deep-redact sensitive fields before sending to AI
+  const safe = redactSensitiveFields(structuredClone(nodeData));
 
   let prompt = `The following workflow node failed with this error:
 
@@ -404,7 +442,7 @@ export async function attemptHealing({
 
     // --- Retry target with PREFIXED step names so Inngest doesn't return
     //     the cached failure from the original execution ---
-    const prefixedStep = createPrefixedStep(step, `heal-${attempt}-`);
+    const prefixedStep = createPrefixedStep(step, `heal-${attempt}-${targetNodeId}-`);
     try {
       const result = await targetExecutor({
         data: currentNodeData,

@@ -114,7 +114,11 @@ export const SelfHealingDialog = ({
 
   useEffect(() => {
     if (open) {
-      form.reset(normalizeSelfHealingDefaults(defaultValues));
+      const normalized = normalizeSelfHealingDefaults(defaultValues);
+      form.reset(normalized);
+      // Sync the ref so the provider-change guard below doesn't
+      // see the reset as a "change" and clear the credential.
+      prevProvider.current = normalized.aiProvider;
     }
   }, [open, defaultValues, form]);
 
