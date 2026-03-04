@@ -120,6 +120,7 @@ enum NodeType {
   DISCORD
   SLACK
   WHATSAPP
+  SELF_HEALING
 }
 
 model Node {

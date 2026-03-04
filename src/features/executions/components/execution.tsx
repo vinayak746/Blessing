@@ -5,10 +5,12 @@ import {
   XCircleIcon,
   Loader2Icon,
   ClockIcon,
+  CopyIcon,
+  CheckIcon,
 } from "lucide-react";
 import { FormatDistanceFn, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,6 +53,14 @@ const formatStatus = (status: ExecutionStatus) => {
 export const ExecutionView = ({ executionId }: { executionId: string }) => {
   const { data: execution } = useSuspenseExecution(executionId);
   const [showStackTrace, setShowStackTrace] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, []);
 
   const duration = execution.completedAt
     ? Math.round(
@@ -159,7 +169,27 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
         )}
         {execution.output && (
             <div className="mt-6 p-4 bg-muted rounded-md">
-                <p className="text-sm font-medium mb-2">Output</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Output</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => handleCopy(formatOutput(execution.output))}
+                  >
+                    {copied ? (
+                      <>
+                        <CheckIcon className="size-3.5" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <CopyIcon className="size-3.5" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap">
                   {formatOutput(execution.output)}
                 </pre>

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { NodeType } from "@prisma/client";
 import { Separator } from "./ui/separator";
+import { ShieldAlertIcon } from "lucide-react";
 
 export type NodeTypeOption = {
   type: NodeType;
@@ -89,7 +90,16 @@ const executionNodes: NodeTypeOption[] = [
     type: NodeType.WHATSAPP,
     label: "WhatsApp",
     description: "Send WhatsApp messages to your contacts.",
-    icon: "/logos/whatsapp.svg", // Add WhatsApp logo to public/logos/
+    icon: "/logos/whatsapp.svg",
+  },
+];
+
+const utilityNodes: NodeTypeOption[] = [
+  {
+    type: NodeType.SELF_HEALING,
+    label: "Self-Healing",
+    description: "AI-powered error recovery. Wraps the next node and auto-fixes failures.",
+    icon: ShieldAlertIcon,
   },
 ];
 
@@ -140,7 +150,17 @@ export function NodeSelector({
     );
   }, [searchQuery]);
 
-  const hasResults = filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0;
+  const filteredUtilityNodes = useMemo(() => {
+    if (!searchQuery.trim()) return utilityNodes;
+    const query = searchQuery.toLowerCase();
+    return utilityNodes.filter(
+      (node) =>
+        node.label.toLowerCase().includes(query) ||
+        node.description.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
+  const hasResults = filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0 || filteredUtilityNodes.length > 0;
 
   const handleNodeSelect = useCallback(
     (selection: NodeTypeOption) => {
@@ -292,6 +312,48 @@ export function NodeSelector({
                           />
                         ) : (
                           <Icon className="size-5 text-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {nodeType.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {nodeType.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {filteredUtilityNodes.length > 0 && (
+            <div>
+              {(filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0) && <Separator className="my-4" />}
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
+                Utility
+              </p>
+              <div className="space-y-1">
+                {filteredUtilityNodes.map((nodeType) => {
+                  const Icon = nodeType.icon;
+                  return (
+                    <div
+                      key={nodeType.type}
+                      className="group flex items-center gap-3 p-3 mx-1 rounded-lg cursor-pointer
+                        hover:bg-accent transition-all duration-150"
+                      onClick={() => handleNodeSelect(nodeType)}
+                    >
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-amber-500/10 border border-amber-500/30 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 transition-colors">
+                        {typeof Icon === "string" ? (
+                          <img
+                            src={Icon}
+                            alt={nodeType.label}
+                            className={`size-5 object-contain${needsDarkInvert(Icon) ? " dark:invert" : ""}`}
+                          />
+                        ) : (
+                          <Icon className="size-5 text-amber-500" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

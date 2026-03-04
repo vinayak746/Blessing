@@ -3,7 +3,7 @@ import { LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-export type NodeStatus = "loading" | "success" | "error" | "initial";
+export type NodeStatus = "loading" | "success" | "error" | "initial" | "healing";
 
 export type NodeStatusVariant = "overlay" | "border";
 
@@ -91,6 +91,49 @@ const StatusBorder = ({
   );
 };
 
+export const HealingBorderIndicator = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => {
+  return (
+    <>
+      <div className="absolute -top-[2px] -left-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)]">
+        <style>
+          {`
+        @keyframes healing-spin {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes healing-pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        .healing-spinner {
+          animation: healing-spin 3s linear infinite;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 140%;
+          aspect-ratio: 1;
+          transform-origin: center;
+        }
+        .healing-pulse {
+          animation: healing-pulse 1.5s ease-in-out infinite;
+        }
+        `}
+        </style>
+        <div className={cn("absolute inset-0 overflow-hidden rounded-sm healing-pulse", className)}>
+          <div className="healing-spinner rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,rgba(217,169,52,0.6)_0deg,rgba(245,158,11,0)_360deg)]" />
+        </div>
+      </div>
+      {children}
+    </>
+  );
+};
+
 export const NodeStatusIndicator = ({
   status,
   variant = "border",
@@ -107,6 +150,8 @@ export const NodeStatusIndicator = ({
         default:
           return <>{children}</>;
       }
+    case "healing":
+      return <HealingBorderIndicator className={className}>{children}</HealingBorderIndicator>;
     case "success":
       return (
         <StatusBorder className={cn("border-green-700/50",className)}>{children}</StatusBorder>
