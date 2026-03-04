@@ -19,10 +19,6 @@ import { NodeType } from "@prisma/client";
 import { Separator } from "./ui/separator";
 import { ShieldAlertIcon } from "lucide-react";
 
-/** Logos that need `dark:invert` to remain visible in dark mode */
-const darkInvertLogos = new Set(["/logos/openai.svg", "/logos/anthropic.svg"]);
-const needsDarkInvert = (icon: string) => darkInvertLogos.has(icon);
-
 export type NodeTypeOption = {
   type: NodeType;
   label: string;

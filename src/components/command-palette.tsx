@@ -43,10 +43,15 @@ export const useCommandPalette = () => {
 
 export const CommandPalette = ({ children }: { children?: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const editorActions = useAtomValue(editorActionsAtom);
   const setNodeSelectorOpen = useSetAtom(nodeSelectorOpenAtom);
   const setKeyboardShortcutsOpen = useSetAtom(keyboardShortcutsModalAtom);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -69,7 +74,7 @@ export const CommandPalette = ({ children }: { children?: React.ReactNode }) => 
   return (
     <CommandPaletteContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      {mounted && <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
@@ -150,7 +155,7 @@ export const CommandPalette = ({ children }: { children?: React.ReactNode }) => 
           </>
         )}
         </CommandList>
-      </CommandDialog>
+      </CommandDialog>}
     </CommandPaletteContext.Provider>
   );
 };

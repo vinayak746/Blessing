@@ -64,6 +64,7 @@ export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
                 alt="Blessing"
                 width={60}
                 height={60}
+                priority
               />
               <span className="font-semibold text-lg">Blessing</span>
             </Link>
