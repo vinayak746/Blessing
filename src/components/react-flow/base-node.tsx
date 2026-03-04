@@ -3,7 +3,7 @@ import {type ComponentProps} from "react";
 
 import { cn } from "@/lib/utils";
 import { NodeStatus } from "./node-status-indicator";
-import { CheckCircle2Icon, Loader2Icon, XCircleIcon } from "lucide-react";
+import { CheckCircle2Icon, Loader2Icon, ShieldAlertIcon, XCircleIcon } from "lucide-react";
 
 interface BaseNodeProps extends 
 HTMLAttributes<HTMLDivElement> {
@@ -30,6 +30,9 @@ export function BaseNode({ className, status, ...props }: BaseNodeProps) {
     )}
     {status === "loading" && (
       <Loader2Icon className="absolute -right-0.5 -bottom-0.5 size-2 text-blue-700 stroke-3 animate-spin " />
+    )}
+    {status === "healing" && (
+      <ShieldAlertIcon className="absolute -right-0.5 -bottom-0.5 size-2 text-amber-500 stroke-3 animate-pulse" />
     )}
     </div>
   
