@@ -177,7 +177,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             )}
           </div>
         )}
-        {execution.output && (() => {
+        {execution.output != null && (() => {
           const formattedOutput = formatOutput(execution.output);
           return (
             <div className="mt-6 p-4 bg-muted rounded-md">

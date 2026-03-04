@@ -106,7 +106,7 @@ export const executeWorkflow = inngest.createFunction(
 
       for (const conn of connections) {
         if (map[conn.toNodeId]) {
-          throw new Error(
+          throw new NonRetriableError(
             `Node ${conn.toNodeId} is protected by multiple self-healing nodes (${map[conn.toNodeId].healerNodeId} and ${conn.fromNodeId}). Each node may only have one self-healing parent.`
           );
         }
@@ -206,11 +206,10 @@ export const executeWorkflow = inngest.createFunction(
         // Merge healing metadata into context under the healer's variable name
         const varName = healer.healerConfig.variableName;
         if (varName) {
-          const sanitizedLog = result.log.map(({ attempt, analysis, confidence, changes }) => ({
+          const sanitizedLog = result.log.map(({ attempt, confidence, changes }) => ({
             attempt,
-            analysis,
             confidence,
-            changes,
+            hadChanges: Object.keys(changes).length > 0,
           }));
           const existing = typeof context[varName] === "object" && context[varName] !== null
             ? context[varName] as Record<string, unknown>
@@ -234,11 +233,10 @@ export const executeWorkflow = inngest.createFunction(
         // Healing failed — add metadata and publish error
         const varName = healer.healerConfig.variableName;
         if (varName) {
-          const sanitizedLog = result.log.map(({ attempt, analysis, confidence, changes }) => ({
+          const sanitizedLog = result.log.map(({ attempt, confidence, changes }) => ({
             attempt,
-            analysis,
             confidence,
-            changes,
+            hadChanges: Object.keys(changes).length > 0,
           }));
           const existing = typeof context[varName] === "object" && context[varName] !== null
             ? context[varName] as Record<string, unknown>
@@ -259,6 +257,13 @@ export const executeWorkflow = inngest.createFunction(
             status: "error",
           })
         );
+        // Persist failure metadata before throwing so it's durable
+        await step.run("persist-healing-failure", async () => {
+          return prisma.execution.updateMany({
+            where: { inngestEventId, workflowId },
+            data: { output: context },
+          });
+        });
         // Healing failed — throw so the execution is marked FAILED
         throw new NonRetriableError(
           `Self-Healing failed after ${result.attempts}/${result.maxAttempts} attempts. ` +

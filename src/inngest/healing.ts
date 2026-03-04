@@ -256,7 +256,7 @@ export async function attemptHealing({
 
   // Step 1: Fetch from DB — return ONLY the value string to minimize serialization
   const encryptedValue = await step.run(
-    "get-healing-credential",
+    `get-healing-credential-${targetNodeId}`,
     () => {
       return prisma.credential
         .findUnique({
@@ -314,7 +314,7 @@ export async function attemptHealing({
     let aiResponse: string;
     try {
       aiResponse = await step.run(
-        `ai-healing-analysis-${attempt}`,
+        `ai-healing-analysis-${targetNodeId}-${attempt}`,
         async () => {
           const { text } = await generateText({
             model: client(providerConfig.model) as any,
@@ -399,7 +399,7 @@ export async function attemptHealing({
 
     // Backoff between attempts (including first retry — this IS already a retry)
     if (attempt >= 1) {
-      await step.sleep(`healing-backoff-${attempt}`, `${attempt * 2}s`);
+      await step.sleep(`healing-backoff-${targetNodeId}-${attempt}`, `${attempt * 2}s`);
     }
 
     // --- Retry target with PREFIXED step names so Inngest doesn't return

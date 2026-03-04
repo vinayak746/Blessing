@@ -273,7 +273,7 @@ export const SelfHealingDialog = ({
                   <FormLabel>Max Healing Attempts</FormLabel>
                   <Select
                     onValueChange={(val) => field.onChange(Number(val))}
-                    defaultValue={String(field.value)}
+                    value={String(field.value)}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
