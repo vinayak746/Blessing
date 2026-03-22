@@ -1,14 +1,15 @@
 import {
   Editor,
-  EditorError,
   EditorLoading,
 } from "@/features/editor/components/editor";
 import { EditorHeader } from "@/features/editor/components/editor-header";
 import { prefetchWorkflow } from "@/features/workflows/server/prefetch";
+import prisma from "@/lib/db";
 import { requireAuth } from "@/lib/auth-utils";
 import { HydrateClient } from "@/trpc/server";
+import { QueryErrorBoundary } from "@/components/query-error-boundary";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 
 interface PageProps {
   params: Promise<{
@@ -17,19 +18,36 @@ interface PageProps {
 }
 
 const Page = async ({ params }: PageProps) => {
-  await requireAuth();
+  const session = await requireAuth();
   const { workflowId } = await params;
+
+  const workflowExists = await prisma.workflow.findUnique({
+    where: {
+      id: workflowId,
+      userId: session.user.id,
+    },
+    select: { id: true },
+  });
+
+  if (!workflowExists) {
+    notFound();
+  }
+
   prefetchWorkflow(workflowId);
   return (
     <HydrateClient>
-      <ErrorBoundary fallback={<EditorError />}>
+      <QueryErrorBoundary
+        title="Couldn't load workflow editor"
+        backHref="/workflows"
+        backLabel="Back to workflows"
+      >
         <Suspense fallback={<EditorLoading />}>
           <EditorHeader workflowId={workflowId} />
           <main className="flex-1">
             <Editor workflowId={workflowId} />
           </main>
         </Suspense>
-      </ErrorBoundary>
+      </QueryErrorBoundary>
     </HydrateClient>
   );
 };

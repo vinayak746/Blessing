@@ -1,6 +1,7 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
+import { useRouter } from "next/navigation";
 import {
   EmptyView,
   EntityContainer,
@@ -11,14 +12,145 @@ import {
   ErrorView,
   LoadingView,
 } from "@/components/entity-components";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   useSuspenseExecutions,
 } from "../hooks/use-executions";
 import { useExecutionsParams } from "../hooks/use-executions-params";
 import type {  Execution } from "@prisma/client";
 import { ExecutionStatus } from "@prisma/client";
-import { CheckCircle2Icon, XCircleIcon, Loader2Icon, ClockIcon } from "lucide-react";
-import { EntityListSkeleton } from "@/components/skeletons";
+import { CheckCircle2Icon, XCircleIcon, Loader2Icon, ClockIcon, ArrowUpRightIcon } from "lucide-react";
+import { ExecutionPageSkeleton } from "@/components/skeletons";
+
+const statusFilters = [
+  { value: "all", label: "All" },
+  { value: "success", label: "Success" },
+  { value: "failed", label: "Failed" },
+  { value: "running", label: "Running" },
+] as const;
+
+const rangeFilters = [
+  { value: "all", label: "All time" },
+  { value: "24h", label: "24h" },
+  { value: "7d", label: "7d" },
+  { value: "30d", label: "30d" },
+] as const;
+
+const formatRelativeShort = (date: Date) => {
+  const days = differenceInDays(new Date(), date);
+  if (days >= 1) return `${days}d ago`;
+  const hours = differenceInHours(new Date(), date);
+  if (hours >= 1) return `${hours}h ago`;
+  const minutes = differenceInMinutes(new Date(), date);
+  if (minutes >= 1) return `${minutes}m ago`;
+  return "Just now";
+};
+
+const ExecutionsFilters = () => {
+  const [params, setParams] = useExecutionsParams();
+
+  return (
+    <div className="rounded-xl border border-border/75 bg-background/55 dark:bg-background/30 p-2.5 space-y-2">
+      {/* Mobile: dropdown selects */}
+      <div className="flex md:hidden items-center gap-2">
+        <div className="flex-1">
+          <span className="text-[11px] text-muted-foreground mb-0.5 block">Status</span>
+          <Select
+            value={params.status ?? "all"}
+            onValueChange={(value) => setParams({ ...params, status: value as typeof statusFilters[number]["value"], page: 1 })}
+          >
+            <SelectTrigger className="h-9 w-full text-xs">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusFilters.map((filter) => (
+                <SelectItem key={filter.value} value={filter.value}>
+                  {filter.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <span className="text-[11px] text-muted-foreground mb-0.5 block">Time</span>
+          <Select
+            value={params.range ?? "all"}
+            onValueChange={(value) => setParams({ ...params, range: value as typeof rangeFilters[number]["value"], page: 1 })}
+          >
+            <SelectTrigger className="h-9 w-full text-xs">
+              <SelectValue placeholder="Time" />
+            </SelectTrigger>
+            <SelectContent>
+              {rangeFilters.map((filter) => (
+                <SelectItem key={filter.value} value={filter.value}>
+                  {filter.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Desktop: pill buttons */}
+      <div className="hidden md:flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">Status</span>
+          <div className="flex items-center gap-1 flex-wrap rounded-lg bg-muted/50 p-1">
+            {statusFilters.map((filter) => {
+              const isActive = (params.status ?? "all") === filter.value;
+              return (
+                <Button
+                  key={filter.value}
+                  variant={isActive ? "default" : "ghost"}
+                  size="sm"
+                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
+                    isActive
+                      ? "border-primary/70 bg-primary text-primary-foreground font-semibold shadow-sm"
+                      : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/85 dark:hover:bg-accent/55 hover:text-foreground"
+                  }`}
+                  onClick={() => setParams({ ...params, status: filter.value, page: 1 })}
+                >
+                  {filter.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">Time</span>
+          <div className="flex items-center gap-1 flex-wrap rounded-lg bg-muted/50 p-1">
+            {rangeFilters.map((filter) => {
+              const isActive = (params.range ?? "all") === filter.value;
+              return (
+                <Button
+                  key={filter.value}
+                  variant={isActive ? "default" : "ghost"}
+                  size="sm"
+                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
+                    isActive
+                      ? "border-primary/70 bg-primary text-primary-foreground font-semibold shadow-sm"
+                      : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/85 dark:hover:bg-accent/55 hover:text-foreground"
+                  }`}
+                  onClick={() => setParams({ ...params, range: filter.value, page: 1 })}
+                >
+                  {filter.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
@@ -28,6 +160,7 @@ export const ExecutionsList = () => {
       getKey={(execution) => execution.id}
       renderItem={(execution) => <ExecutionItem data={execution} />}
       emptyView={<ExecutionsEmpty />}
+      className="gap-y-3"
     />
   );
 };
@@ -66,6 +199,7 @@ export const ExecutionsContainer = ({
     <div className="h-[calc(100vh-(var(--spacing)*14))]">
       <EntityContainer
         header={<ExecutionsHeader />}
+        search={<ExecutionsFilters />}
         pagination={<ExecutionsPagination />}
       >
         {children}
@@ -75,7 +209,7 @@ export const ExecutionsContainer = ({
 };
 
 export const ExecutionsLoading = () => {
-  return <EntityListSkeleton count={5} />;
+  return <ExecutionPageSkeleton />;
 };
 
 export const ExecutionsError = () => {
@@ -83,10 +217,14 @@ export const ExecutionsError = () => {
 };
 
 export const ExecutionsEmpty = () => {
+  const [params] = useExecutionsParams();
+  const hasActiveFilters = (params.status && params.status !== "all") || (params.range && params.range !== "all");
   
   return (
       <EmptyView
-        message="You haven't created any executions yet. Get Started by running your first workflow."
+        message={hasActiveFilters
+          ? "No executions match these filters. Try widening the status or time range."
+          : "You haven't created any executions yet. Get Started by running your first workflow."}
       />
   );
 };
@@ -94,15 +232,42 @@ export const ExecutionsEmpty = () => {
 const getStatusIcon = (status: ExecutionStatus) => {
   switch (status) {
     case ExecutionStatus.SUCCESS:
-      return <CheckCircle2Icon className= "size-5 text-green-600" />;
+      return <CheckCircle2Icon className= "size-4 text-green-600 dark:text-green-400" />;
     case ExecutionStatus.FAILED:
-      return <XCircleIcon className="size-5 text-red-600" />;
+      return <XCircleIcon className="size-4 text-red-600 dark:text-red-400" />;
     case ExecutionStatus.RUNNING:
-      return <Loader2Icon className="size-5 text-blue-600 animate-spin" />;
+      return <Loader2Icon className="size-4 text-blue-600 dark:text-blue-400 animate-spin" />;
     default:
-      return <ClockIcon className="size-5 text-muted-foreground" />
+      return <ClockIcon className="size-4 text-muted-foreground" />
   }
 }
+
+const getStatusTextClass = (status: ExecutionStatus) => {
+  switch (status) {
+    case ExecutionStatus.SUCCESS:
+      return "text-green-700 dark:text-green-400";
+    case ExecutionStatus.FAILED:
+      return "text-red-700 dark:text-red-400";
+    case ExecutionStatus.RUNNING:
+      return "text-blue-700 dark:text-blue-400";
+    default:
+      return "text-muted-foreground";
+  }
+}
+
+const getStatusDotClass = (status: ExecutionStatus) => {
+  switch (status) {
+    case ExecutionStatus.SUCCESS:
+      return "bg-green-500";
+    case ExecutionStatus.FAILED:
+      return "bg-red-500";
+    case ExecutionStatus.RUNNING:
+      return "bg-blue-500";
+    default:
+      return "bg-muted-foreground";
+  }
+}
+
 const formatStatus = (status: ExecutionStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 }
@@ -113,6 +278,7 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
   }
 }
  }) => {
+  const router = useRouter();
   const duration = data.completedAt
     ? Math.round(
       (new Date(data.completedAt).getTime() - new Date(data.startedAt).getTime()) /1000,
@@ -120,21 +286,52 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
     : null;
 
     const subtitle = (
-      <>
-          {data.workflow.name} &bull; Started{" "}
-          {formatDistanceToNow(data.startedAt, { addSuffix: true })}
-          {duration !== null && <> &bull; Took {duration}s </>}
-      </>
+      <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        <span className={`inline-flex items-center gap-1 font-medium ${getStatusTextClass(data.status)}`}>
+          <span className={`size-1.5 rounded-full ${getStatusDotClass(data.status)}`} aria-hidden="true" />
+          {formatStatus(data.status)}
+        </span>
+        <span className="text-muted-foreground">&bull;</span>
+        <span className="text-muted-foreground text-xs sm:text-sm">
+          {formatRelativeShort(data.startedAt)}
+        </span>
+        {duration !== null && (
+          <>
+            <span className="hidden sm:inline text-muted-foreground">&bull;</span>
+            <span className="hidden sm:inline text-muted-foreground text-xs sm:text-sm">Took {duration}s</span>
+          </>
+        )}
+      </span>
     )
   return (
     <EntityItem
       href={`/executions/${data.id}`}
-      title={formatStatus(data.status)}
+      title={
+        <span className="block max-w-[26rem] truncate text-sm md:text-base font-semibold text-foreground">
+          {data.workflow.name}
+        </span>
+      }
       subtitle={subtitle}
       image={
-        <div className="size-8 flex items-center justify-center">
+        <div className="size-8 rounded-full border border-border/50 bg-background/75 dark:bg-background/25 flex items-center justify-center">
           {getStatusIcon(data.status)}
         </div>
+      }
+      actions={
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 px-2.5 text-xs border-border/70 bg-background/75 dark:bg-card hover:bg-accent/70 dark:hover:bg-accent/80 hover:-translate-y-0.5 active:translate-y-0"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            router.push(`/workflows/${data.workflow.id}`);
+          }}
+        >
+          <ArrowUpRightIcon className="size-3.5" />
+          <span className="hidden sm:inline">Open workflow</span>
+          <span className="sm:hidden">Open</span>
+        </Button>
       }
     />
   );

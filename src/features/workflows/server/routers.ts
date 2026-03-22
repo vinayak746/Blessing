@@ -6,6 +6,7 @@ import {
   premiumProcedure,
   protectedProcedure,
 } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { PAGINATION } from "@/config/constants";
 import { NodeType } from "@prisma/client";
@@ -209,10 +210,18 @@ export const workflowsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const workflow = await prisma.workflow.findUniqueOrThrow({
+      const workflow = await prisma.workflow.findUnique({
         where: { id: input.id, userId: ctx.auth.user.id },
         include: { nodes: true, connections: true },
       });
+
+      if (!workflow) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Workflow not found",
+        });
+      }
+
       // Transform server nodes to react-flow compatible nodes
       const nodes: Node[] = workflow.nodes.map((node) => ({
         id: node.id,

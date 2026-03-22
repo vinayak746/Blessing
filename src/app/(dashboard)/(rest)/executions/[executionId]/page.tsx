@@ -1,10 +1,12 @@
 import { ExecutionView } from "@/features/executions/components/execution";
-import { ExecutionsError, ExecutionsLoading } from "@/features/executions/components/executions";
 import { prefetchExecution } from "@/features/executions/server/prefetch";
 import { requireAuth } from "@/lib/auth-utils";
 import { HydrateClient } from "@/trpc/server";
+import { QueryErrorBoundary } from "@/components/query-error-boundary";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { notFound } from "next/navigation";
+import prisma from "@/lib/db";
+import { ExecutionDetailSkeleton } from "@/components/skeletons";
 
 interface PageProps {
     params: Promise<{
@@ -13,18 +15,37 @@ interface PageProps {
 }
 
 const Page = async({params}: PageProps) => {
-  await requireAuth();
+  const session = await requireAuth();
     const {executionId} = await params;
+    
+    // Validate execution exists and belongs to user's workflow
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: {
+        workflow: {
+          select: { userId: true }
+        }
+      }
+    });
+    
+    if (!execution || execution.workflow.userId !== session.user.id) {
+      notFound();
+    }
+    
     prefetchExecution(executionId);
   return (
-    <div className="p-4 md:px-10 md:py-6 h-full">
-      <div className="mx-auto max-w-screen-md w-full flex flex-col gap-y-8 h-full">
+    <div className="p-3 sm:p-4 md:px-10 md:py-6 h-full">
+      <div className="mx-auto w-full max-w-2xl flex flex-col gap-y-6 sm:gap-y-8 h-full">
         <HydrateClient>
-          <ErrorBoundary fallback={<ExecutionsError />}>
-            <Suspense fallback={<ExecutionsLoading />}>
+          <QueryErrorBoundary
+            title="Couldn't load this execution"
+            backHref="/executions"
+            backLabel="Back to executions"
+          >
+            <Suspense fallback={<ExecutionDetailSkeleton />}>
               <ExecutionView executionId={executionId}/>
             </Suspense>
-          </ErrorBoundary>
+          </QueryErrorBoundary>
         
         </HydrateClient>
        </div>

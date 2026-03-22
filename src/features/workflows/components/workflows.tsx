@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { EntityListSkeleton } from "@/components/skeletons";
+import { WorkflowPageSkeleton } from "@/components/skeletons";
 import {
   EmptyView,
   EntityContainer,
@@ -75,6 +75,7 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
         description="Create and manage your workflows"
         onNew={handleCreate}
         newButtonLabel="New Workflow"
+        newButtonClassName="bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-primary/90 dark:shadow-primary/20 dark:hover:shadow-primary/35 focus-visible:ring-2 focus-visible:ring-primary/45"
         disabled={disabled}
         isCreating={createWorkflow.isPending}
       />
@@ -115,7 +116,7 @@ export const WorkflowsContainer = ({
 };
 
 export const WorkflowsLoading = () => {
-  return <EntityListSkeleton count={5} />;
+  return <WorkflowPageSkeleton />;
 };
 
 export const WorkflowsError = () => {

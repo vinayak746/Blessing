@@ -11,7 +11,6 @@ import {
   EntityPagination,
   EntitySearch,
   ErrorView,
-  LoadingView,
 } from "@/components/entity-components";
 import {
   useRemoveCredential,
@@ -23,6 +22,7 @@ import { useEntitySearch } from "@/hooks/use-entity-search";
 import type {  Credential } from "@prisma/client";
 import { CredentialType } from "@prisma/client";
 import Image from "next/image";
+import { CredentialPageSkeleton, DetailViewSkeleton } from "@/components/skeletons";
 
 export const CredentialsSearch = () => {
   const [params, setParams] = useCredentialsParams();
@@ -96,7 +96,11 @@ export const CredentialsContainer = ({
 };
 
 export const CredentialsLoading = () => {
-  return <LoadingView message="Loading Credentials..." />;
+  return <CredentialPageSkeleton />;
+};
+
+export const CredentialViewLoading = () => {
+  return <DetailViewSkeleton />;
 };
 
 export const CredentialsError = () => {

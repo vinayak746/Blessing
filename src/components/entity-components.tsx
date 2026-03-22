@@ -38,10 +38,17 @@ import {
 } from "./ui/alert-dialog";
 import { useState } from "react";
 
+type EntityStatItem = {
+  label: string;
+  value: React.ReactNode;
+  helper?: string;
+};
+
 type EntityHeaderProps = {
   title: string;
   description?: string;
   newButtonLabel?: string;
+  newButtonClassName?: string;
   disabled?: boolean;
   isCreating?: boolean;
 } & (
@@ -56,27 +63,43 @@ export const EntityHeader = ({
   onNew,
   newButtonHref,
   newButtonLabel,
+  newButtonClassName,
   disabled,
   isCreating,
 }: EntityHeaderProps) => {
   return (
-    <div className="flex flex-row items-center justify-between gap-x-4">
-      <div className="flex flex-col">
-        <h1 className="text-lg md:text-xl font-semibold">{title}</h1>
+    <div className="flex flex-row items-start justify-between gap-4 md:items-center md:gap-x-5">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-2xl md:text-[1.7rem] leading-tight font-semibold tracking-tight">{title}</h1>
         {description && (
-          <p className="text-xs md:text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             {description}
           </p>
         )}
       </div>
       {onNew && !newButtonHref && (
-        <Button disabled={isCreating || disabled} size="sm" onClick={onNew}>
+        <Button
+          disabled={isCreating || disabled}
+          size="sm"
+          className={cn(
+            "transition-all active:scale-[0.98]",
+            newButtonClassName,
+          )}
+          onClick={onNew}
+        >
           <PlusIcon className="size-4" />
           {newButtonLabel}
         </Button>
       )}
       {newButtonHref && !onNew && (
-        <Button size="sm" asChild>
+        <Button
+          size="sm"
+          className={cn(
+            "transition-all active:scale-[0.98]",
+            newButtonClassName,
+          )}
+          asChild
+        >
           <Link href={newButtonHref} prefetch>
             <PlusIcon className="size-4" />
             {newButtonLabel}
@@ -99,10 +122,10 @@ export const EntityContainer = ({
   pagination,
 }: EntityContainerProps) => {
   return (
-    <div className="p-4 md:px-10 md:py-6 h-full">
-      <div className="mx-auto max-w-7xl w-full flex flex-col gap-y-8 h-full">
+    <div className="p-5 md:px-8 md:py-7 h-full">
+      <div className="mx-auto max-w-7xl w-full flex flex-col gap-y-7 h-full">
         {header}
-        <div className="flex flex-col gap-y-4 h-full">
+        <div className="rounded-xl border border-border bg-card/70 dark:bg-card/80 p-5 md:p-6 flex flex-col gap-y-5 h-full shadow-sm dark:shadow-md">
           {search}
           {children}
         </div>
@@ -124,18 +147,42 @@ export const EntitySearch = ({
   placeholder = "Search",
 }: EntitySearchProps) => {
   return (
-    <div className="relative ml-auto">
+    <div className="relative ml-auto w-full md:w-auto">
       <SearchIcon
         className="size-3.5 absolute left-3 top-1/2 
             -translate-y-1/2 text-muted-foreground"
       />
       <Input
-        className="max-w-[200px] bg-background
-            shadow-none border-border pl-8"
+        className="w-full md:w-[240px] bg-background/95 shadow-none border-border text-foreground/85 dark:text-foreground pl-8 focus-visible:ring-2 focus-visible:ring-primary/45"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
+    </div>
+  );
+};
+
+export const EntityStats = ({ items }: { items: EntityStatItem[] }) => {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="rounded-lg border bg-background/80 px-3 py-2"
+        >
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            {item.label}
+          </p>
+          <p className="mt-1 text-base md:text-lg font-semibold leading-none">
+            {item.value}
+          </p>
+          {item.helper && (
+            <p className="mt-1 text-[11px] text-muted-foreground">{item.helper}</p>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
@@ -162,6 +209,7 @@ export const EntityPagination = ({
           disabled={page === 1 || disabled}
           variant="outline"
           size="sm"
+          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/45 hover:text-foreground active:scale-[0.98] transition-all"
           onClick={() => onPageChange(Math.max(1, page - 1))}
         >
           Previous
@@ -170,6 +218,7 @@ export const EntityPagination = ({
           disabled={page === totalPages || totalPages === 0 || disabled}
           variant="outline"
           size="sm"
+          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/45 hover:text-foreground hover:translate-y-0 active:scale-[0.98] transition-all"
           onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         >
           Next
@@ -185,7 +234,7 @@ interface StateViewProps {
 
 export const LoadingView = ({ message }: StateViewProps) => {
   return (
-    <div className="flex justify-center items-center h-full  flex-1 flex-col gap-y-4">
+    <div className="flex justify-center items-center h-full  flex-1 flex-col gap-y-4" aria-live="polite">
       <Loader2Icon className=" size-6 animate-spin text-primary" />
       {!!message && <p className="text-sm text-muted-foreground">{message}</p>}
     </div>
@@ -194,7 +243,7 @@ export const LoadingView = ({ message }: StateViewProps) => {
 
 export const ErrorView = ({ message }: StateViewProps) => {
   return (
-    <div className="flex justify-center items-center h-full  flex-1 flex-col gap-y-4">
+    <div className="flex justify-center items-center h-full  flex-1 flex-col gap-y-4" role="alert">
       <AlertTriangleIcon className=" size-6 text-red-500" />
       {!!message && <p className="text-sm text-foreground">{message}</p>}
     </div>
@@ -207,7 +256,7 @@ interface EmptyViewProps extends StateViewProps {
 
 export const EmptyView = ({ message, onNew }: EmptyViewProps) => {
   return (
-    <Empty className="border border-dashed bg-secondary/50">
+    <Empty className="border border-dashed bg-secondary/40 rounded-xl p-2">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <PackageOpenIcon />
@@ -301,18 +350,23 @@ export const EntityItem = ({
   return (
     <>
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-border/80 bg-card/95 backdrop-blur-sm sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangleIcon className="size-4 text-destructive" />
+              <span>Delete item?</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground">
               {deleteConfirmMessage || `This will permanently delete "${title}". This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="border-border/80 bg-background/80 hover:bg-accent/70">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm"
             >
               {isRemoving ? (
                 <>
@@ -326,10 +380,14 @@ export const EntityItem = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Link href={href} prefetch>
+      <Link
+        href={href}
+        prefetch
+        className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
         <Card
           className={cn(
-            "p-4 shadow-none hover:shadow cursor-pointer transition-all duration-200 hover:border-primary/60 dark:hover:border-primary/50 dark:hover:shadow-[0_0_12px_-3px] dark:hover:shadow-primary/20",
+            "p-4 border-border/80 bg-card dark:bg-card/90 shadow-none cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-primary/80 hover:bg-accent/55 dark:hover:border-primary/45 dark:hover:bg-accent/35",
             isRemoving && "opacity-50 cursor-not-allowed",
             className,
           )}
@@ -337,10 +395,12 @@ export const EntityItem = ({
           <CardContent className="flex flex-row items-center justify-between p-0">
             <div className="flex items-center gap-3">
               {image}
-              <div>
-                <CardTitle className="text-base font-medium">{title}</CardTitle>
+              <div className="min-w-0">
+                <CardTitle className="text-sm md:text-base font-medium truncate">
+                  {title}
+                </CardTitle>
                 {!!subtitle && (
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs leading-relaxed text-muted-foreground/95 dark:text-muted-foreground">
                     {subtitle}
                   </CardDescription>
                 )}

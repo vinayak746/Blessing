@@ -4,6 +4,7 @@ import {
   premiumProcedure,
   protectedProcedure,
 } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { PAGINATION } from "@/config/constants";
 import { CredentialType, NodeType } from "@prisma/client";
@@ -65,9 +66,17 @@ export const credentialsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const credential = await prisma.credential.findUniqueOrThrow({
+      const credential = await prisma.credential.findUnique({
         where: { id: input.id, userId: ctx.auth.user.id },
       });
+
+      if (!credential) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Credential not found",
+        });
+      }
+
       // Don't expose the encrypted value to the client
       // Return a masked version instead
       return {

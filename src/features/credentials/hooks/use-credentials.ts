@@ -67,7 +67,10 @@ export const useRemoveCredential = () => {
 
 export const useSuspenseCredential = (id: string) => {
   const trpc = useTRPC();
-  return useSuspenseQuery(trpc.credentials.getOne.queryOptions({ id }));
+  return useSuspenseQuery({
+    ...trpc.credentials.getOne.queryOptions({ id }),
+    retry: false,
+  });
 };
 
 /**

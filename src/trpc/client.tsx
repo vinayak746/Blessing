@@ -34,6 +34,7 @@ function getUrl() {
 export function TRPCReactProvider(
   props: Readonly<{
     children: React.ReactNode;
+    requestHeaders?: Record<string, string>;
   }>
 ) {
   // NOTE: Avoid useState when initializing the query client if you don't
@@ -47,6 +48,18 @@ export function TRPCReactProvider(
         httpBatchLink({
           transformer: superjson, 
           url: getUrl(),
+          headers() {
+            if (typeof window === "undefined") {
+              return props.requestHeaders ?? {};
+            }
+            return {};
+          },
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include",
+            });
+          },
         }),
       ],
     })

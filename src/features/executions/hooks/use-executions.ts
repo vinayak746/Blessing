@@ -17,5 +17,8 @@ export const useSuspenseExecutions = () => {
 
 export const useSuspenseExecution = (id: string) => {
   const trpc = useTRPC();
-  return useSuspenseQuery(trpc.executions.getOne.queryOptions({ id }));
+  return useSuspenseQuery({
+    ...trpc.executions.getOne.queryOptions({ id }),
+    retry: false,
+  });
 };
