@@ -308,11 +308,7 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
   return (
     <EntityItem
       href={`/executions/${data.id}`}
-      title={
-        <span className="block max-w-[26rem] truncate text-sm md:text-base font-semibold text-foreground">
-          {data.workflow.name}
-        </span>
-      }
+      title={data.workflow.name}
       subtitle={subtitle}
       image={
         <div className="size-8 rounded-full border border-border/50 bg-background/75 dark:bg-background/25 flex items-center justify-center">
