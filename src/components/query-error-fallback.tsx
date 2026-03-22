@@ -3,6 +3,7 @@
 import { AlertTriangleIcon, RefreshCcwIcon, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { isNotFoundError, isUnauthorizedError } from "@/lib/error-utils";
 
 type QueryErrorFallbackProps = {
   error: unknown;
@@ -10,12 +11,6 @@ type QueryErrorFallbackProps = {
   title: string;
   backHref?: string;
   backLabel?: string;
-};
-
-const getErrorMessage = (error: unknown) => {
-  if (typeof error === "string") return error;
-  if (error instanceof Error) return error.message;
-  return "Unknown error";
 };
 
 export const QueryErrorFallback = ({
@@ -26,26 +21,11 @@ export const QueryErrorFallback = ({
   backLabel = "Back",
 }: QueryErrorFallbackProps) => {
   const router = useRouter();
-  const message = getErrorMessage(error);
-  const isNotFound = /not found|no record was found|required but not found/i.test(
-    message,
-  );
-  const isUnauthorized = /unauthorized|forbidden/i.test(message);
+  const isNotFound = isNotFoundError(error);
+  const isUnauthorized = isUnauthorizedError(error);
 
   const handleBack = () => {
-    // Always prefer explicit backHref
-    if (backHref) {
-      router.push(backHref);
-      return;
-    }
-    
-    // Fallback: try to go back in browser history
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      // Last resort: go to dashboard
-      router.push("/workflows");
-    }
+    router.push(backHref || "/workflows");
   };
 
   return (

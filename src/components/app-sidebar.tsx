@@ -49,6 +49,9 @@ const menutItems = [
   },
 ];
 
+const menuButtonClassName =
+  "relative isolate gap-x-4 h-10 px-4 rounded-lg border border-transparent transition-all duration-200 hover:bg-sidebar-accent/80 hover:border-sidebar-border/70 hover:-translate-y-px dark:hover:border-sidebar-border/45 focus-visible:ring-2 focus-visible:ring-sidebar-ring/55 data-[active=true]:border-sidebar-border/85 dark:data-[active=true]:border-sidebar-border/55 data-[active=true]:bg-sidebar-accent/90 data-[active=true]:text-sidebar-accent-foreground before:absolute before:left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary before:opacity-0 before:transition-opacity before:duration-200 data-[active=true]:before:opacity-100";
+
 export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -80,37 +83,35 @@ export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1.5">
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {(() => {
-                      const isActive =
-                        item.url === "/"
-                          ? pathname === "/"
-                          : pathname.startsWith(item.url);
+                {group.items.map((item) => {
+                  const isActive =
+                    item.url === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(item.url);
 
-                      return (
-                    <SidebarMenuButton
-                      tooltip={item.title}
-                      isActive={isActive}
-                      asChild
-                      className="relative isolate gap-x-4 h-10 px-4 rounded-lg border border-transparent transition-all duration-200 hover:bg-sidebar-accent/80 hover:border-sidebar-border/70 hover:-translate-y-px dark:hover:border-sidebar-border/45 focus-visible:ring-2 focus-visible:ring-sidebar-ring/55 data-[active=true]:border-sidebar-border/85 dark:data-[active=true]:border-sidebar-border/55 data-[active=true]:bg-sidebar-accent/90 data-[active=true]:text-sidebar-accent-foreground before:absolute before:left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary before:opacity-0 before:transition-opacity before:duration-200 data-[active=true]:before:opacity-100"
-                    >
-                      <Link href={item.url} prefetch aria-current={isActive ? "page" : undefined}>
-                        <item.icon className="size-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                      );
-                    })()}
-                  </SidebarMenuItem>
-                ))}
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={isActive}
+                        asChild
+                        className={menuButtonClassName}
+                      >
+                        <Link href={item.url} prefetch aria-current={isActive ? "page" : undefined}>
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
                 {isAdmin && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       tooltip="Newsletter"
                       isActive={pathname.startsWith("/newsletter-admin")}
                       asChild
-                      className="relative isolate gap-x-4 h-10 px-4 rounded-lg border border-transparent transition-all duration-200 hover:bg-sidebar-accent/80 hover:border-sidebar-border/70 hover:-translate-y-px dark:hover:border-sidebar-border/45 focus-visible:ring-2 focus-visible:ring-sidebar-ring/55 data-[active=true]:border-sidebar-border/85 dark:data-[active=true]:border-sidebar-border/55 data-[active=true]:bg-sidebar-accent/90 data-[active=true]:text-sidebar-accent-foreground before:absolute before:left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary before:opacity-0 before:transition-opacity before:duration-200 data-[active=true]:before:opacity-100"
+                      className={menuButtonClassName}
                     >
                       <Link href="/newsletter-admin" prefetch aria-current={pathname.startsWith("/newsletter-admin") ? "page" : undefined}>
                         <NewspaperIcon className="size-4" />

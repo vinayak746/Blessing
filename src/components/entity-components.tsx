@@ -39,6 +39,7 @@ import {
 import { useState } from "react";
 
 type EntityStatItem = {
+  id?: string;
   label: string;
   value: React.ReactNode;
   helper?: string;
@@ -167,9 +168,9 @@ export const EntityStats = ({ items }: { items: EntityStatItem[] }) => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <div
-          key={item.label}
+          key={item.id ?? `${item.label}-${index}`}
           className="rounded-lg border bg-background/80 px-3 py-2"
         >
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground">

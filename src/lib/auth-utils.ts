@@ -7,7 +7,8 @@ const getSafeSession = async () => {
     return await auth.api.getSession({
       headers: await headers(),
     });
-  } catch {
+  } catch (error) {
+    console.error("getSafeSession auth.api.getSession failed", error);
     return null;
   }
 };

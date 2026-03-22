@@ -203,13 +203,14 @@
   --dot-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Hide scrollbars globally (scroll still works) */
-* {
+/* Optional scrollbar utility for specific containers only */
+.hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  scrollbar-gutter: stable;
 }
 
-*::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
@@ -370,9 +371,7 @@ ol li::marker {
   .skeleton-shimmer::before {
     animation: none !important;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {

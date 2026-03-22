@@ -30,8 +30,20 @@ export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   if (queryOptions.queryKey[1]?.type === 'infinite') {
     void queryClient
       .prefetchInfiniteQuery(queryOptions as any)
-      .catch(() => undefined);
+      .catch((error) => {
+        console.error("TRPC prefetchInfiniteQuery failed", {
+          queryKey: queryOptions.queryKey,
+          error,
+        });
+        return undefined;
+      });
   } else {
-    void queryClient.prefetchQuery(queryOptions).catch(() => undefined);
+    void queryClient.prefetchQuery(queryOptions).catch((error) => {
+      console.error("TRPC prefetchQuery failed", {
+        queryKey: queryOptions.queryKey,
+        error,
+      });
+      return undefined;
+    });
   }
 }

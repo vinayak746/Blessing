@@ -19,16 +19,17 @@ const Page = async({params}: PageProps) => {
     const {executionId} = await params;
     
     // Validate execution exists and belongs to user's workflow
-    const execution = await prisma.execution.findUnique({
-      where: { id: executionId },
-      include: {
+    const execution = await prisma.execution.findFirst({
+      where: {
+        id: executionId,
         workflow: {
-          select: { userId: true }
-        }
-      }
+          userId: session.user.id,
+        },
+      },
+      select: { id: true },
     });
-    
-    if (!execution || execution.workflow.userId !== session.user.id) {
+
+    if (!execution) {
       notFound();
     }
     

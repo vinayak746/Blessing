@@ -1,7 +1,8 @@
 "use client";
 
-import { formatDistanceToNow, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
+import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { useRouter } from "next/navigation";
+import type { ComponentType } from "react";
 import {
   EmptyView,
   EntityContainer,
@@ -10,7 +11,6 @@ import {
   EntityList,
   EntityPagination,
   ErrorView,
-  LoadingView,
 } from "@/components/entity-components";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +64,6 @@ const ExecutionsFilters = () => {
           <span className="text-[11px] text-muted-foreground mb-0.5 block">Status</span>
           <Select
             value={params.status ?? "all"}
-            onValueChange={(value) => setParams({ ...params, status: value as typeof statusFilters[number]["value"], page: 1 })}
           >
             <SelectTrigger className="h-9 w-full text-xs">
               <SelectValue placeholder="Status" />
@@ -229,44 +228,45 @@ export const ExecutionsEmpty = () => {
   );
 };
 
-const getStatusIcon = (status: ExecutionStatus) => {
-  switch (status) {
-    case ExecutionStatus.SUCCESS:
-      return <CheckCircle2Icon className= "size-4 text-green-600 dark:text-green-400" />;
-    case ExecutionStatus.FAILED:
-      return <XCircleIcon className="size-4 text-red-600 dark:text-red-400" />;
-    case ExecutionStatus.RUNNING:
-      return <Loader2Icon className="size-4 text-blue-600 dark:text-blue-400 animate-spin" />;
-    default:
-      return <ClockIcon className="size-4 text-muted-foreground" />
+const statusStyles: Record<
+  ExecutionStatus,
+  {
+    icon: ComponentType<{ className?: string }>;
+    iconClass: string;
+    textClass: string;
+    dotClass: string;
   }
-}
+> = {
+  [ExecutionStatus.SUCCESS]: {
+    icon: CheckCircle2Icon,
+    iconClass: "size-4 text-green-600 dark:text-green-400",
+    textClass: "text-green-700 dark:text-green-400",
+    dotClass: "bg-green-500",
+  },
+  [ExecutionStatus.FAILED]: {
+    icon: XCircleIcon,
+    iconClass: "size-4 text-red-600 dark:text-red-400",
+    textClass: "text-red-700 dark:text-red-400",
+    dotClass: "bg-red-500",
+  },
+  [ExecutionStatus.RUNNING]: {
+    icon: Loader2Icon,
+    iconClass: "size-4 text-blue-600 dark:text-blue-400 animate-spin",
+    textClass: "text-blue-700 dark:text-blue-400",
+    dotClass: "bg-blue-500",
+  },
+};
 
-const getStatusTextClass = (status: ExecutionStatus) => {
-  switch (status) {
-    case ExecutionStatus.SUCCESS:
-      return "text-green-700 dark:text-green-400";
-    case ExecutionStatus.FAILED:
-      return "text-red-700 dark:text-red-400";
-    case ExecutionStatus.RUNNING:
-      return "text-blue-700 dark:text-blue-400";
-    default:
-      return "text-muted-foreground";
-  }
-}
+const defaultStatusStyle = {
+  icon: ClockIcon,
+  iconClass: "size-4 text-muted-foreground",
+  textClass: "text-muted-foreground",
+  dotClass: "bg-muted-foreground",
+};
 
-const getStatusDotClass = (status: ExecutionStatus) => {
-  switch (status) {
-    case ExecutionStatus.SUCCESS:
-      return "bg-green-500";
-    case ExecutionStatus.FAILED:
-      return "bg-red-500";
-    case ExecutionStatus.RUNNING:
-      return "bg-blue-500";
-    default:
-      return "bg-muted-foreground";
-  }
-}
+const getStatusStyle = (status: ExecutionStatus) => {
+  return statusStyles[status] ?? defaultStatusStyle;
+};
 
 const formatStatus = (status: ExecutionStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
@@ -279,6 +279,8 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
 }
  }) => {
   const router = useRouter();
+  const statusStyle = getStatusStyle(data.status);
+  const StatusIcon = statusStyle.icon;
   const duration = data.completedAt
     ? Math.round(
       (new Date(data.completedAt).getTime() - new Date(data.startedAt).getTime()) /1000,
@@ -287,8 +289,8 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
 
     const subtitle = (
       <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-        <span className={`inline-flex items-center gap-1 font-medium ${getStatusTextClass(data.status)}`}>
-          <span className={`size-1.5 rounded-full ${getStatusDotClass(data.status)}`} aria-hidden="true" />
+        <span className={`inline-flex items-center gap-1 font-medium ${statusStyle.textClass}`}>
+          <span className={`size-1.5 rounded-full ${statusStyle.dotClass}`} aria-hidden="true" />
           {formatStatus(data.status)}
         </span>
         <span className="text-muted-foreground">&bull;</span>
@@ -314,7 +316,7 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
       subtitle={subtitle}
       image={
         <div className="size-8 rounded-full border border-border/50 bg-background/75 dark:bg-background/25 flex items-center justify-center">
-          {getStatusIcon(data.status)}
+          <StatusIcon className={statusStyle.iconClass} />
         </div>
       }
       actions={

@@ -9,7 +9,7 @@ export default async function NotFound() {
       ? "/credentials"
       : referrer.includes("/workflows")
         ? "/workflows"
-        : "/executions"; // default to executions if unknown
+        : "/workflows"; // default to workflows if unknown
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
@@ -21,7 +21,7 @@ export default async function NotFound() {
         href={target}
         className="text-sm underline underline-offset-4 hover:text-primary"
       >
-        Return to {target.replace("/", "") || "executions"}
+        Return to {target.replace("/", "") || "workflows"}
       </Link>
     </div>
   );

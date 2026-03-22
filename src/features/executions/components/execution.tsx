@@ -8,7 +8,7 @@ import {
   CopyIcon,
   CheckIcon,
 } from "lucide-react";
-import { FormatDistanceFn, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -89,7 +89,10 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             {getStatusIcon(execution.status)}
             <div className="min-w-0 flex-1">
               <CardTitle className="text-base sm:text-lg">{formatStatus(execution.status)}</CardTitle>
-              <CardDescription className="text-xs sm:text-sm truncate">
+              <CardDescription
+                className="text-xs sm:text-sm truncate"
+                title={execution.workflow.name}
+              >
                 {execution.workflow.name}
               </CardDescription>
             </div>

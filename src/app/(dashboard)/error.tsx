@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangleIcon, LogInIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isUnauthorizedError } from "@/lib/error-utils";
 
 export default function DashboardError({
   error,
@@ -13,8 +14,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   const router = useRouter();
-  const message = error?.message ?? "Unknown error";
-  const isUnauthorized = /unauthorized|forbidden/i.test(message);
+  const isUnauthorized = isUnauthorizedError(error);
 
   useEffect(() => {
     if (isUnauthorized) {
