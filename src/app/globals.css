@@ -380,6 +380,33 @@ ol li::marker {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .animate-slide-down {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
+  }
+
+  .animate-fade-in-up {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: none;
+    will-change: auto;
+  }
+
+  .animate-fade-in-up.in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .stagger-1,
+  .stagger-2,
+  .stagger-3,
+  .stagger-4,
+  .stagger-5 {
+    transition-delay: 0s;
+  }
 }
 
 /* ── Landing page CSS animations (replaces framer-motion) ── */
@@ -448,33 +475,3 @@ ol li::marker {
 .stagger-3 { transition-delay: 0.24s; }
 .stagger-4 { transition-delay: 0.32s; }
 .stagger-5 { transition-delay: 0.4s; }
-
-/* ── Accessibility: respect reduced-motion preferences ── */
-@media (prefers-reduced-motion: reduce) {
-  .animate-slide-down {
-    animation: none;
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    will-change: auto;
-  }
-
-  .animate-fade-in-up {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    transition: none;
-    will-change: auto;
-  }
-
-  .animate-fade-in-up.in-view {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
-  .stagger-1,
-  .stagger-2,
-  .stagger-3,
-  .stagger-4,
-  .stagger-5 {
-    transition-delay: 0s;
-  }
-}

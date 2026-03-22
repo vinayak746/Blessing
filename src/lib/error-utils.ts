@@ -43,5 +43,5 @@ export const isUnauthorizedError = (error: unknown) => {
   if (code === "UNAUTHORIZED" || code === "FORBIDDEN") return true;
 
   const message = getErrorMessage(error);
-  return /unauthorized|forbidden|active subscription required|subscription required|subscription/i.test(message);
+  return /unauthorized|forbidden|active subscription required|subscription required/i.test(message);
 };

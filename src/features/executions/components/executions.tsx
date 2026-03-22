@@ -44,11 +44,12 @@ const rangeFilters = [
 ] as const;
 
 const formatRelativeShort = (date: Date) => {
-  const days = differenceInDays(new Date(), date);
+  const now = new Date();
+  const days = differenceInDays(now, date);
   if (days >= 1) return `${days}d ago`;
-  const hours = differenceInHours(new Date(), date);
+  const hours = differenceInHours(now, date);
   if (hours >= 1) return `${hours}h ago`;
-  const minutes = differenceInMinutes(new Date(), date);
+  const minutes = differenceInMinutes(now, date);
   if (minutes >= 1) return `${minutes}m ago`;
   return "Just now";
 };
@@ -64,6 +65,16 @@ const ExecutionsFilters = () => {
           <span className="text-[11px] text-muted-foreground mb-0.5 block">Status</span>
           <Select
             value={params.status ?? "all"}
+            onValueChange={(value) =>
+              setParams({
+                ...params,
+                status:
+                  value === "success" || value === "failed" || value === "running"
+                    ? value
+                    : "all",
+                page: 1,
+              })
+            }
           >
             <SelectTrigger className="h-9 w-full text-xs">
               <SelectValue placeholder="Status" />
