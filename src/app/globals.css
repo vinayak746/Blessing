@@ -83,12 +83,12 @@
   --secondary: #e8ddc0;
   --secondary-foreground: #2b2311;
   --muted: #f5efdf;
-  --muted-foreground: #746641;
+  --muted-foreground: #645833;
   --accent: #f9e6b5;
   --accent-foreground: #2a1d07;
   --destructive: #b35b29;
-  --border: #e3d4aa;
-  --input: #e8dcb6;
+  --border: #d2bf8d;
+  --input: #dcc998;
   --ring: #8B5A2B;
   --chart-1: #f5d97c;
   --chart-2: #d4af37;
@@ -101,7 +101,7 @@
   --sidebar-primary-foreground: #fff8f0;
   --sidebar-accent: #f9e6b5;
   --sidebar-accent-foreground: #2a1d07;
-  --sidebar-border: #e5d7b4;
+  --sidebar-border: #d7c396;
   --sidebar-ring: #8B5A2B;
   --destructive-foreground: #fffaf2;
   --font-sans: Inter, sans-serif;
@@ -201,6 +201,27 @@
   --minimap-node: #3a2f1e;
   --minimap-node-stroke: #d4af37;
   --dot-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Optional scrollbar utility for specific containers only */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scrollbar-gutter: stable;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Dark mode dashboard backdrop */
+.dark .dark-dashboard-bg {
+  background:
+    radial-gradient(1100px circle at 0% -5%, rgba(212, 175, 55, 0.09), transparent 42%),
+    radial-gradient(800px circle at 100% -15%, rgba(245, 203, 104, 0.06), transparent 40%),
+    linear-gradient(180deg, #15100c 0%, #110e0a 45%, #0f0c09 100%);
 }
 
 @layer base {
@@ -308,6 +329,86 @@ ol li::marker {
   100% { transform: translate3d(-33.3333%, 0, 0); }
 }
 
+@keyframes shimmer {
+  100% { transform: translate3d(100%, 0, 0); }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--accent) 72%, transparent);
+}
+
+.skeleton-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translate3d(-100%, 0, 0);
+  animation: shimmer 1.15s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.52),
+    transparent
+  );
+}
+
+.dark .skeleton-shimmer {
+  background: color-mix(in oklab, var(--accent) 48%, transparent);
+}
+
+.dark .skeleton-shimmer::before {
+  animation-duration: 1.45s;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16),
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::before {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-slide-down {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
+  }
+
+  .animate-fade-in-up {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: none;
+    will-change: auto;
+  }
+
+  .animate-fade-in-up.in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .stagger-1,
+  .stagger-2,
+  .stagger-3,
+  .stagger-4,
+  .stagger-5 {
+    transition-delay: 0s;
+  }
+}
+
 /* ── Landing page CSS animations (replaces framer-motion) ── */
 @keyframes slide-down {
   from { opacity: 0; transform: translate3d(0, -64px, 0); }
@@ -374,33 +475,3 @@ ol li::marker {
 .stagger-3 { transition-delay: 0.24s; }
 .stagger-4 { transition-delay: 0.32s; }
 .stagger-5 { transition-delay: 0.4s; }
-
-/* ── Accessibility: respect reduced-motion preferences ── */
-@media (prefers-reduced-motion: reduce) {
-  .animate-slide-down {
-    animation: none;
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    will-change: auto;
-  }
-
-  .animate-fade-in-up {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    transition: none;
-    will-change: auto;
-  }
-
-  .animate-fade-in-up.in-view {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
-  .stagger-1,
-  .stagger-2,
-  .stagger-3,
-  .stagger-4,
-  .stagger-5 {
-    transition-delay: 0s;
-  }
-}

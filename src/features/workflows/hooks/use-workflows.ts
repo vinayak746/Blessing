@@ -65,7 +65,10 @@ export const useRemoveWorkflow = () => {
 
 export const useSuspenseWorkflow = (id: string) => {
   const trpc = useTRPC();
-  return useSuspenseQuery(trpc.workflows.getOne.queryOptions({ id }));
+  return useSuspenseQuery({
+    ...trpc.workflows.getOne.queryOptions({ id }),
+    retry: false,
+  });
 };
 /**
  * Hook to update workflow name

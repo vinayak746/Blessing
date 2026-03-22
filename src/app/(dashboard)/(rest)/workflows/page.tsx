@@ -1,11 +1,10 @@
 import { prefetchWorkflows } from "@/features/workflows/server/prefetch";
 import { requireAuth } from "@/lib/auth-utils";
 import { HydrateClient } from "@/trpc/server";
+import { QueryErrorBoundary } from "@/components/query-error-boundary";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import {
   WorkflowsContainer,
-  WorkflowsError,
   WorkflowsList,
   WorkflowsLoading,
 } from "@/features/workflows/components/workflows";
@@ -22,15 +21,15 @@ const page = async ({ searchParams }: Props) => {
   const params = await workflowsParamsLoader(searchParams);
   prefetchWorkflows(params);
   return (
-    <WorkflowsContainer>
-      <HydrateClient>
-        <ErrorBoundary fallback={<WorkflowsError />}>
-          <Suspense fallback={<WorkflowsLoading />}>
+    <HydrateClient>
+      <QueryErrorBoundary title="Couldn't load workflows" backHref="/workflows">
+        <Suspense fallback={<WorkflowsLoading />}>
+          <WorkflowsContainer>
             <WorkflowsList />
-          </Suspense>
-        </ErrorBoundary>
-      </HydrateClient>
-    </WorkflowsContainer>
+          </WorkflowsContainer>
+        </Suspense>
+      </QueryErrorBoundary>
+    </HydrateClient>
   );
 };
 

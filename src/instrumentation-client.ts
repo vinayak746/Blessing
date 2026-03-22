@@ -7,8 +7,9 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: "https://380b357cb0172503a36d063c0fa7e2fb@o4510465555628032.ingest.us.sentry.io/4510465571291136",
 
-  // Start without Replay — it's loaded lazily below to avoid blocking render
-  integrations: [],
+  enabled: process.env.NODE_ENV === "production",
+
+  integrations: [Sentry.replayIntegration()],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 0.2,
@@ -24,18 +25,5 @@ Sentry.init({
   // Enable sending user PII (Personally Identifiable Information)
   sendDefaultPii: true,
 });
-
-// Lazy-load Session Replay after page becomes interactive (~100KB saved from initial bundle)
-if (typeof window !== "undefined") {
-  window.addEventListener(
-    "load",
-    () => {
-      void Sentry.lazyLoadIntegration("replayIntegration").then((replay) => {
-        Sentry.addIntegration(replay());
-      });
-    },
-    { once: true },
-  );
-}
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

@@ -28,8 +28,22 @@ export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
 ) {
   const queryClient = getQueryClient();
   if (queryOptions.queryKey[1]?.type === 'infinite') {
-    void queryClient.prefetchInfiniteQuery(queryOptions as any);
+    void queryClient
+      .prefetchInfiniteQuery(queryOptions as any)
+      .catch((error) => {
+        console.error("TRPC prefetchInfiniteQuery failed", {
+          queryKey: queryOptions.queryKey,
+          error,
+        });
+        return undefined;
+      });
   } else {
-    void queryClient.prefetchQuery(queryOptions);
+    void queryClient.prefetchQuery(queryOptions).catch((error) => {
+      console.error("TRPC prefetchQuery failed", {
+        queryKey: queryOptions.queryKey,
+        error,
+      });
+      return undefined;
+    });
   }
 }

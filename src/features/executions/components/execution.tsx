@@ -8,7 +8,7 @@ import {
   CopyIcon,
   CheckIcon,
 } from "lucide-react";
-import { FormatDistanceFn, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -84,46 +84,41 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
     <Card className="shadow-none">
       {/* ... rest of the component stays the same until line 151 ... */}
       <CardHeader>
-        <div className="flex items-center gap-3">
-          {getStatusIcon(execution.status)}
-          <div>
-            <CardTitle>{formatStatus(execution.status)}</CardTitle>
-            <CardDescription>
-              Execution for {execution.workflow.name}
-            </CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {getStatusIcon(execution.status)}
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg">{formatStatus(execution.status)}</CardTitle>
+              <CardDescription
+                className="text-xs sm:text-sm truncate"
+                title={execution.workflow.name}
+              >
+                {execution.workflow.name}
+              </CardDescription>
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Workflow
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              Status
             </p>
-            <Link
-              prefetch
-              className="text-sm hover:underline text-primary"
-              href={`/workflows/${execution.workflowId}`}
-            >
-              {execution.workflow.name}
-            </Link>
+            <p className="text-xs sm:text-sm">{formatStatus(execution.status)}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Status</p>
-            <p className="text-sm">{formatStatus(execution.status)}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Started</p>
-            <p className="text-sm">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">Started</p>
+            <p className="text-xs sm:text-sm">
               {formatDistanceToNow(execution.startedAt, { addSuffix: true })}
             </p>
           </div>
           {execution.completedAt ? (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
+            <div className="hidden sm:block">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Completed
               </p>
-              <p className="text-sm">
+              <p className="text-xs sm:text-sm">
                 {formatDistanceToNow(execution.completedAt, {
                   addSuffix: true,
                 })}
@@ -131,26 +126,19 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             </div>
           ) : null}
           {duration !== null ? (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
+            <div className="hidden md:block">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Duration
               </p>
-              <p className="text-sm">{duration}s</p>
+              <p className="text-xs sm:text-sm">{duration}s</p>
             </div>
           ) : null}
-
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Event ID
-            </p>
-            <p className="text-sm">{execution.inngestEventId}</p>
-          </div>
         </div>
         {execution.error && (
-          <div className="mt-6 p-4 bg-red-50 dark:bg-card rounded-lg border border-red-200 dark:border-destructive/30 space-y-3">
+          <div className="mt-6 p-3 sm:p-4 bg-red-50 dark:bg-card rounded-lg border border-red-200 dark:border-destructive/30 space-y-3">
             <div>
-              <p className="text-sm font-medium text-red-900 dark:text-destructive mb-2">Error</p>
-              <p className="text-sm text-red-800 dark:text-muted-foreground font-mono">
+              <p className="text-xs sm:text-sm font-medium text-red-900 dark:text-destructive mb-2">Error</p>
+              <p className="text-xs sm:text-sm text-red-800 dark:text-muted-foreground font-mono break-words">
                 {execution.error}
               </p>
             </div>
@@ -180,13 +168,13 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
         {execution.output != null && (() => {
           const formattedOutput = formatOutput(execution.output);
           return (
-            <div className="mt-6 p-4 bg-muted rounded-md">
-                <div className="flex items-center justify-between mb-2">
+            <div className="mt-6 p-3 sm:p-4 bg-muted rounded-md">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
                   <p className="text-sm font-medium">Output</p>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground w-fit"
                     onClick={() => handleCopy(formattedOutput)}
                   >
                     {copied ? (
@@ -202,7 +190,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                     )}
                   </Button>
                 </div>
-                <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap">
+                <pre className="text-xs font-mono overflow-auto whitespace-pre-wrap break-words">
                   {formattedOutput}
                 </pre>
             </div>
