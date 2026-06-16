@@ -110,6 +110,7 @@ export const WorkflowTemplates = ({
         <div className="flex justify-center mt-4">
           <Button
             variant="outline"
+            className="hover:-translate-y-1 active:translate-y-0"
             onClick={() => {
               onSelectTemplate("blank");
               onOpenChange(false);

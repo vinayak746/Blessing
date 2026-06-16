@@ -15,7 +15,7 @@ export function BaseNode({ className, status, ...props }: BaseNodeProps) {
     <div
       data-node-type="base-node"
       className={cn(
-        "bg-card text-card-foreground relative rounded-sm border border-border hover:border-primary/50 hover:bg-accent",
+        "bg-card text-card-foreground relative rounded-sm border border-border hover:border-primary/65 hover:bg-accent",
         className,
       )}
       {...props}

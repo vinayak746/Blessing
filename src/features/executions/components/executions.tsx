@@ -120,7 +120,7 @@ const ExecutionsFilters = () => {
                   key={filter.value}
                   variant={isActive ? "default" : "ghost"}
                   size="sm"
-                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
+                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-1 active:translate-y-0 ${
                     isActive
                       ? "border-primary/70 bg-primary text-primary-foreground font-semibold shadow-sm"
                       : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/85 dark:hover:bg-accent/55 hover:text-foreground"
@@ -144,7 +144,7 @@ const ExecutionsFilters = () => {
                   key={filter.value}
                   variant={isActive ? "default" : "ghost"}
                   size="sm"
-                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
+                  className={`h-7 rounded-md px-2.5 text-xs border transition-all duration-200 hover:-translate-y-1 active:translate-y-0 ${
                     isActive
                       ? "border-primary/70 bg-primary text-primary-foreground font-semibold shadow-sm"
                       : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/85 dark:hover:bg-accent/55 hover:text-foreground"
@@ -330,7 +330,7 @@ export const ExecutionItem = ({ data }: { data: Omit<Execution, "errorStack"> & 
         <Button
           size="sm"
           variant="outline"
-          className="h-8 px-2.5 text-xs border-border/70 bg-background/75 dark:bg-card hover:bg-accent/70 dark:hover:bg-accent/80 hover:-translate-y-0.5 active:translate-y-0"
+          className="h-8 px-2.5 text-xs border-border/70 bg-background/75 dark:bg-card hover:bg-accent/70 dark:hover:bg-accent/80 hover:-translate-y-1 active:translate-y-0"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();

@@ -151,7 +151,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-900 dark:text-primary hover:bg-red-100 dark:hover:bg-accent"
+                    className="text-red-900 dark:text-primary hover:bg-red-100 dark:hover:bg-accent hover:-translate-y-1 active:translate-y-0"
                   >
                     {showStackTrace ? "Hide stack trace" : "Show stack trace"}
                   </Button>
@@ -174,7 +174,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground w-fit"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground w-fit hover:-translate-y-1 active:translate-y-0"
                     onClick={() => handleCopy(formattedOutput)}
                   >
                     {copied ? (

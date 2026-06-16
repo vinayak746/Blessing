@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "./auth";
 
-const getSafeSession = async () => {
+export const getSafeSession = async () => {
   try {
     return await auth.api.getSession({
       headers: await headers(),

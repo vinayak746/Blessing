@@ -433,13 +433,13 @@ const EditorInner = ({ workflowId }: { workflowId: string }) => {
         <Background color="var(--dot-color)" />
         {/* Show smaller controls on mobile, hide default fitView button */}
         <Controls 
-          className={cn("dark:!bg-[#1c1610] dark:!border-[#302618] dark:!rounded-lg", isMobile ? "!left-2 !bottom-2 scale-90" : "")} 
+          className={cn("dark:!bg-[#120e0b] dark:!border-[#64502c] dark:!rounded-lg", isMobile ? "!left-2 !bottom-2 scale-90" : "")} 
           showFitView={false}
         />
         {/* Hide MiniMap on mobile */}
         {!isMobile && (
           <MiniMap 
-            className="!bottom-24 dark:!bg-[#1c1610] dark:!border dark:!border-[#302618] dark:!rounded-lg"
+            className="!bottom-24 dark:!bg-[#120e0b] dark:!border dark:!border-[#64502c] dark:!rounded-lg"
             maskColor="var(--minimap-mask, rgba(240, 240, 240, 0.6))"
             nodeColor="var(--minimap-node, #e2e2e2)"
             nodeStrokeColor="var(--minimap-node-stroke, #555)"

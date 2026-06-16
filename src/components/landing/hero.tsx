@@ -27,9 +27,9 @@ function LogoStrip() {
             <Image
               src={logo.src}
               alt={logo.label}
-              width={40}
-              height={40}
-              className={`object-contain max-h-10${logo.dark ? " dark:invert" : ""}`}
+              width={70}
+              height={70}
+              className={`object-contain h-auto max-h-10 w-auto${logo.dark ? " dark:invert" : ""}`}
               loading="lazy"
             />
           </div>

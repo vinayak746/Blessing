@@ -268,7 +268,7 @@ export function NodeSelector({
                         if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
                       }}
                     >
-                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted dark:bg-muted/70 border border-border/50 group-hover:border-primary/65 group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors">
                         {typeof Icon === "string" ? (
                           <img
                             src={Icon}
@@ -316,7 +316,7 @@ export function NodeSelector({
                         if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
                       }}
                     >
-                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted border border-border/50 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-muted dark:bg-muted/70 border border-border/50 group-hover:border-primary/65 group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors">
                         {typeof Icon === "string" ? (
                           <img
                             src={Icon}
@@ -364,7 +364,7 @@ export function NodeSelector({
                         if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
                       }}
                     >
-                      <div className="flex items-center justify-center size-10 rounded-lg bg-amber-500/10 border border-amber-500/30 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 transition-colors">
+                      <div className="flex items-center justify-center size-10 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/30 transition-colors">
                         {typeof Icon === "string" ? (
                           <img
                             src={Icon}

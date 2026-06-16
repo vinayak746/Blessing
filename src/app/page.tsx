@@ -1,8 +1,7 @@
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import LandingPage from "@/components/landing-page";
+import { getSafeSession } from "@/lib/auth-utils";
 
 export const metadata: Metadata = {
   title: "Blessing — Workflow Automation Platform",
@@ -17,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSafeSession();
   if (session) redirect("/workflows");
   return <LandingPage />;
 }
