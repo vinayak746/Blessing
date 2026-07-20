@@ -16,6 +16,8 @@ type Props = {
   searchParams: Promise<SearchParams>;
 };
 
+export const dynamic = "force-dynamic";
+
 const page = async ({ searchParams }: Props) => {
   await requireAuth();
 

@@ -3,10 +3,12 @@
 import { getSubscriptionToken, type Realtime } from "@inngest/realtime";
 import { inngest } from "@/inngest/client";
 import { whatsappChannel } from "@/inngest/channels/whatsapp";
+import { requireAuth } from "@/lib/auth-utils";
 
 export type WhatsAppToken = Realtime.Token<typeof whatsappChannel, ["status"]>;
 
 export async function fetchWhatsAppRealtimeToken(): Promise<WhatsAppToken> {
+  await requireAuth();
   const token = await getSubscriptionToken(inngest, {
     channel: whatsappChannel(),
     topics: ["status"],
