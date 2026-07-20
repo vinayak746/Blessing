@@ -302,13 +302,14 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
               <div className="flex gap-4">
                 <Button
                   type="submit"
+                  className="hover:-translate-y-1 active:translate-y-0"
                   disabled={
                     createCredential.isPending || updateCredential.isPending
                   }
                 >
                   {isEdit ? "Update" : "Create"}
                 </Button>
-                <Button type="button" variant="outline" asChild>
+                <Button type="button" variant="outline" asChild className="hover:-translate-y-1 active:translate-y-0">
                   <Link href="/credentials" prefetch>
                     Cancel
                   </Link>

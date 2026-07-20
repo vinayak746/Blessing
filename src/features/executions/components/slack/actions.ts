@@ -2,8 +2,8 @@
 
 import { getSubscriptionToken, type Realtime } from "@inngest/realtime";
 import { inngest } from "@/inngest/client";
-import { discordChannel } from "@/inngest/channels/discord";
 import { slackChannel } from "@/inngest/channels/slack";
+import { requireAuth } from "@/lib/auth-utils";
 
 export type SlackToken =Realtime.Token<
     typeof slackChannel,
@@ -11,6 +11,7 @@ export type SlackToken =Realtime.Token<
     >;
 
 export async function fetchSlackRealtimeToken(): Promise<SlackToken> {
+    await requireAuth();
     const token = await getSubscriptionToken(inngest, {
         channel: slackChannel(),
         topics: ["status"],

@@ -20,7 +20,7 @@ export function PlaceholderNode({ children, onClick }: PlaceholderNodeProps) {
 
   return (
     <BaseNode
-      className="bg-card w-auto h-auto border-dashed border-muted-foreground/40 p-4 text-center text-muted-foreground shadow-none cursor-pointer hover:border-primary/50 hover:bg-accent"
+      className="bg-card w-auto h-auto border-dashed border-muted-foreground/40 p-4 text-center text-muted-foreground shadow-none cursor-pointer hover:border-primary/65 hover:bg-accent"
       onClick={onClick}
     >
       {children}

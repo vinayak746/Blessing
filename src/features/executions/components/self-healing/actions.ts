@@ -3,6 +3,7 @@
 import { getSubscriptionToken, type Realtime } from "@inngest/realtime";
 import { inngest } from "@/inngest/client";
 import { selfHealingChannel } from "@/inngest/channels/self-healing";
+import { requireAuth } from "@/lib/auth-utils";
 
 export type SelfHealingToken = Realtime.Token<
   typeof selfHealingChannel,
@@ -10,6 +11,7 @@ export type SelfHealingToken = Realtime.Token<
 >;
 
 export async function fetchSelfHealingRealtimeToken(): Promise<SelfHealingToken> {
+  await requireAuth();
   const token = await getSubscriptionToken(inngest, {
     channel: selfHealingChannel(),
     topics: ["status"],
