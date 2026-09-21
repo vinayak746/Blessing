@@ -20,3 +20,4 @@ export default async function Page() {
   if (session) redirect("/workflows");
   return <LandingPage />;
 }
+3;

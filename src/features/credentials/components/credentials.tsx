@@ -126,6 +126,7 @@ const credentialLogos: Record<CredentialType, string> = {
     [CredentialType.ANTHROPIC]: "/logos/anthropic.svg",
     [CredentialType.GEMINI]: "/logos/gemini.svg",
     [CredentialType.WHATSAPP]: "/logos/whatsapp.svg",
+    [CredentialType.GMAIL]: "/logos/gmail.svg",
 }
 
 // Type for credential list item (without sensitive value field)

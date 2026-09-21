@@ -41,12 +41,12 @@ import { Button } from "@/components/ui/button";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 
-// Use z.nativeEnum for Prisma enums (NOT z.enum)
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.nativeEnum(CredentialType),
   value: z.string().min(1, "API Key is required"),
   phoneNumberId: z.string().optional(),
+  gmailEmail: z.string().optional(),
 }).refine((data) => {
   if (data.type === CredentialType.WHATSAPP) {
     return !!data.phoneNumberId && data.phoneNumberId.length > 0;
@@ -55,6 +55,14 @@ const formSchema = z.object({
 }, {
   message: "Phone Number ID is required for WhatsApp",
   path: ["phoneNumberId"],
+}).refine((data) => {
+  if (data.type === CredentialType.GMAIL) {
+    return !!data.gmailEmail && data.gmailEmail.length > 0;
+  }
+  return true;
+}, {
+  message: "Gmail address is required",
+  path: ["gmailEmail"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,6 +88,11 @@ const credentialTypeOptions = [
     label: "WhatsApp",
     logo: "/logos/whatsapp.svg",
   },
+  {
+    value: CredentialType.GMAIL,
+    label: "Gmail",
+    logo: "/logos/gmail.svg",
+  },
 ];
 
 interface CredentialFormProps {
@@ -99,14 +112,21 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
 
   const isEdit = !!initialData?.id;
 
-  // Parse WhatsApp credential if editing
+  // Parse compound credentials if editing
   let initialPhoneNumberId = "";
+  let initialGmailEmail = "";
   let initialValue = initialData?.value || "";
   
   if (initialData?.type === CredentialType.WHATSAPP && initialData?.value?.includes(":")) {
     const [phoneId, token] = initialData.value.split(":");
     initialPhoneNumberId = phoneId;
     initialValue = token;
+  }
+
+  if (initialData?.type === CredentialType.GMAIL && initialData?.value?.includes(":")) {
+    const separatorIndex = initialData.value.indexOf(":");
+    initialGmailEmail = initialData.value.substring(0, separatorIndex);
+    initialValue = initialData.value.substring(separatorIndex + 1);
   }
 
   const form = useForm<FormValues>({
@@ -117,23 +137,31 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
           type: (initialData.type as CredentialType) || CredentialType.OPENAI,
           value: initialValue,
           phoneNumberId: initialPhoneNumberId,
+          gmailEmail: initialGmailEmail,
         }
       : {
           name: "",
           type: CredentialType.OPENAI,
           value: "",
           phoneNumberId: "",
+          gmailEmail: "",
         },
   });
 
   const watchType = form.watch("type");
   const isWhatsApp = watchType === CredentialType.WHATSAPP;
+  const isGmail = watchType === CredentialType.GMAIL;
 
   const onSubmit = async (values: FormValues) => {
     // For WhatsApp, combine phoneNumberId and access token
     let finalValue = values.value;
     if (values.type === CredentialType.WHATSAPP && values.phoneNumberId) {
       finalValue = `${values.phoneNumberId}:${values.value}`;
+    }
+
+    // For Gmail, combine email and app password
+    if (values.type === CredentialType.GMAIL && values.gmailEmail) {
+      finalValue = `${values.gmailEmail}:${values.value}`;
     }
 
     const submitData = {
@@ -276,22 +304,87 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
                 />
               )}
 
+              {/* Gmail Setup Instructions */}
+              {isGmail && (
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
+                  <div className="text-sm font-medium">
+                    How to get Gmail App Password
+                  </div>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                    <li>
+                      Enable 2-Step Verification on your{" "}
+                      <a
+                        href="https://myaccount.google.com/security"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline inline-flex items-center gap-1"
+                      >
+                        Google Account
+                        <ExternalLinkIcon className="h-3 w-3" />
+                      </a>
+                    </li>
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://myaccount.google.com/apppasswords"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline inline-flex items-center gap-1"
+                      >
+                        App Passwords
+                        <ExternalLinkIcon className="h-3 w-3" />
+                      </a>
+                    </li>
+                    <li>Enter an app name (e.g., &quot;Blessing&quot;) and click <strong>Create</strong></li>
+                    <li>Copy the 16-character app password</li>
+                  </ol>
+                  <div className="text-xs text-muted-foreground border-t pt-2 mt-2">
+                    ⚠️ App passwords require 2-Step Verification to be enabled.
+                  </div>
+                </div>
+              )}
+
+              {/* Gmail Email Field */}
+              {isGmail && (
+                <FormField
+                  control={form.control}
+                  name="gmailEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gmail Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="you@gmail.com" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The Gmail address to read emails from
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{isWhatsApp ? "Access Token" : "API Key"}</FormLabel>
+                    <FormLabel>{isWhatsApp ? "Access Token" : isGmail ? "App Password" : "API Key"}</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
-                        placeholder={isWhatsApp ? "EAAxxxxxxx..." : "sk-..."} 
+                        placeholder={isWhatsApp ? "EAAxxxxxxx..." : isGmail ? "xxxx xxxx xxxx xxxx" : "sk-..."} 
                         {...field} 
                       />
                     </FormControl>
                     {isWhatsApp && (
                       <FormDescription>
                         Generate this in Meta Developer Portal → WhatsApp → API Setup
+                      </FormDescription>
+                    )}
+                    {isGmail && (
+                      <FormDescription>
+                        Generate this at Google Account → Security → App Passwords
                       </FormDescription>
                     )}
                     <FormMessage />
@@ -302,14 +395,14 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
               <div className="flex gap-4">
                 <Button
                   type="submit"
-                  className="hover:-translate-y-1 active:translate-y-0"
+                  className=""
                   disabled={
                     createCredential.isPending || updateCredential.isPending
                   }
                 >
                   {isEdit ? "Update" : "Create"}
                 </Button>
-                <Button type="button" variant="outline" asChild className="hover:-translate-y-1 active:translate-y-0">
+                <Button type="button" variant="outline" asChild className="">
                   <Link href="/credentials" prefetch>
                     Cancel
                   </Link>

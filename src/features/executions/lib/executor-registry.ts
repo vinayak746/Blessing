@@ -11,6 +11,7 @@ import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
 import { whatsappExecutor } from "../components/whatsapp/executor";
 import { selfHealingExecutor } from "../components/self-healing/executor";
+import { gmailReaderExecutor } from "../components/gmail-reader/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.MANUAL_TRIGGER]: manualTriggerExecutor,
@@ -25,6 +26,7 @@ export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.SLACK]: slackExecutor, 
   [NodeType.WHATSAPP]: whatsappExecutor,
   [NodeType.SELF_HEALING]: selfHealingExecutor,
+  [NodeType.GMAIL_READER]: gmailReaderExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor => {

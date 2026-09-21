@@ -50,7 +50,7 @@ const menutItems = [
 ];
 
 const menuButtonClassName =
-  "relative isolate gap-x-4 h-10 px-4 rounded-lg border border-transparent transition-all duration-200 hover:bg-sidebar-accent/80 hover:border-sidebar-border/70 hover:-translate-y-px dark:hover:border-sidebar-border/45 focus-visible:ring-2 focus-visible:ring-sidebar-ring/55 data-[active=true]:border-sidebar-border/85 dark:data-[active=true]:border-sidebar-border/55 data-[active=true]:bg-sidebar-accent/90 data-[active=true]:text-sidebar-accent-foreground before:absolute before:left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary before:opacity-0 before:transition-opacity before:duration-200 data-[active=true]:before:opacity-100";
+  "relative isolate gap-x-4 h-10 px-4 rounded-lg border border-transparent transition-[background-color,border-color,color] duration-200 hover:bg-sidebar-accent/80 hover:border-sidebar-border/70 dark:hover:border-sidebar-border/45 focus-visible:ring-2 focus-visible:ring-sidebar-ring/55 data-[active=true]:border-sidebar-border/85 dark:data-[active=true]:border-sidebar-border/55 data-[active=true]:bg-sidebar-accent/90 data-[active=true]:text-sidebar-accent-foreground before:absolute before:left-1.5 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary before:opacity-0 before:transition-opacity before:duration-200 data-[active=true]:before:opacity-100";
 
 export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
@@ -142,7 +142,7 @@ export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Billing Portal"
-              className="gap-x-4 h-10 px-4 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/80 hover:-translate-y-px"
+              className="gap-x-4 h-10 px-4 rounded-lg transition-[background-color,border-color] duration-200 hover:bg-sidebar-accent/80"
               onClick={() => authClient.customer.portal()}
             >
               <CreditCardIcon className="h-4 w-4" />
@@ -152,7 +152,7 @@ export const AppSidebar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sign out"
-              className="gap-x-4 h-10 px-4 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/80 hover:-translate-y-px"
+              className="gap-x-4 h-10 px-4 rounded-lg transition-[background-color,border-color] duration-200 hover:bg-sidebar-accent/80"
               onClick={() =>
                 authClient.signOut({
                   fetchOptions: {

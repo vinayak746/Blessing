@@ -159,7 +159,7 @@ export const SlackDialog = ({
             />
 
             <DialogFooter className="mt-4">
-              <Button type="submit" className="hover:-translate-y-1 active:translate-y-0">Save</Button>
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </Form>

@@ -75,7 +75,7 @@ export function CardItem({
   className?: string;
 }) {
   return (
-    <div className={`transition-transform duration-200 ease-out hover:-translate-y-1 will-change-transform ${className ?? ""}`}>
+    <div className={`transition-[background-color,border-color,box-shadow] duration-200 ease-out ${className ?? ""}`}>
       {children}
     </div>
   );
