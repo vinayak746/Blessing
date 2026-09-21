@@ -60,79 +60,29 @@ function truncate(value: string, limit: number): string {
   return `${value.slice(0, limit)}\n\n[...truncated ${value.length - limit} characters]`;
 }
 
-let pdfWorkerResolved = false;
-
 /**
- * pdf-parse v2 runs pdfjs in a worker. When Next bundles the package into
- * `.next/server/chunks`, the sibling `pdf.worker.mjs` file is not emitted and
- * pdfjs fails with "Setting up fake worker failed".
+ * Extract text from a PDF buffer using `unpdf`.
  *
- * The real fix is `serverExternalPackages` in next.config.ts (see below), but
- * we also point pdf-parse at the worker file on disk as a belt-and-braces
- * fallback so a stale build doesn't silently break attachment parsing.
- */
-async function ensurePdfWorker(mod: any): Promise<void> {
-  if (pdfWorkerResolved) return;
-  pdfWorkerResolved = true;
-
-  try {
-    const PDFParse = mod.PDFParse ?? mod.default?.PDFParse;
-    if (typeof PDFParse?.setWorker !== "function") return;
-
-    const { existsSync } = await import("node:fs");
-    const path = await import("node:path");
-    const { pathToFileURL } = await import("node:url");
-
-    const candidates = [
-      "node_modules/pdf-parse/dist/pdf-parse/cjs/pdf.worker.mjs",
-      "node_modules/pdf-parse/dist/pdf-parse/esm/pdf.worker.mjs",
-      "node_modules/pdf-parse/dist/worker/pdf.worker.mjs",
-    ].map((rel) => path.join(process.cwd(), rel));
-
-    const workerPath = candidates.find((candidate) => existsSync(candidate));
-    if (workerPath) {
-      PDFParse.setWorker(pathToFileURL(workerPath).href);
-    }
-  } catch {
-    // Leave pdf-parse on its default worker resolution.
-  }
-}
-
-/**
- * Extract text from a PDF buffer.
- * Supports both pdf-parse v1 (default export is a function) and
- * v2 (named `PDFParse` class export).
+ * We deliberately do NOT use `pdf-parse` / raw `pdfjs-dist` here. Both pull in
+ * pdfjs's canvas-based code paths, which on Node reach for browser-only globals
+ * (`DOMMatrix`, `Path2D`, `ImageData`) that don't exist outside a browser or a
+ * native canvas polyfill (`@napi-rs/canvas`). That polyfill is a native
+ * (Rust) module, and on Vercel's serverless runtime its binary either isn't
+ * present for the target platform or isn't loaded early enough, so pdfjs
+ * falls through to the browser code path and throws
+ * `DOMMatrix is not defined` — which is exactly the failure we hit.
+ *
+ * `unpdf` ships its own bundled "serverless" build of PDF.js (import path
+ * `unpdf`, distinct from `unpdf/pdfjs`) that is patched to avoid canvas
+ * entirely for text extraction. No native dependency, so nothing to fail to
+ * load in a serverless environment.
  */
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
-    const mod: any = await import("pdf-parse");
-
-    // pdf-parse v2
-    const PDFParse = mod.PDFParse ?? mod.default?.PDFParse;
-    if (typeof PDFParse === "function") {
-      await ensurePdfWorker(mod);
-
-      const parser = new PDFParse({
-        data: new Uint8Array(buffer),
-        // Keep pdfjs quiet; it logs font warnings for almost every resume.
-        verbosity: 0,
-      });
-      try {
-        const result = await parser.getText();
-        return result?.text ?? "";
-      } finally {
-        await parser.destroy?.();
-      }
-    }
-
-    // pdf-parse v1
-    const pdfParse = typeof mod === "function" ? mod : mod.default;
-    if (typeof pdfParse === "function") {
-      const data = await pdfParse(buffer);
-      return data?.text ?? "";
-    }
-
-    return "[Unable to extract PDF text: unsupported pdf-parse version]";
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const pdf = await getDocumentProxy(new Uint8Array(buffer));
+    const { text } = await extractText(pdf, { mergePages: true });
+    return text ?? "";
   } catch (error) {
     return `[Unable to extract PDF text: ${(error as Error).message}]`;
   }
@@ -162,7 +112,7 @@ async function extractAttachmentText(attachment: Attachment): Promise<string> {
     text = await extractPdfText(attachment.content);
   } else if (
     contentType ===
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     filename.endsWith(".docx")
   ) {
     text = await extractDocxText(attachment.content);
@@ -178,10 +128,10 @@ async function extractAttachmentText(attachment: Attachment): Promise<string> {
 async function parseEmail(
   uid: number,
   rawBase64: string,
-  includeHtml: boolean
+  includeHtml: boolean,
 ): Promise<ParsedEmail> {
   const parsed: ParsedMail = await simpleParser(
-    Buffer.from(rawBase64, "base64")
+    Buffer.from(rawBase64, "base64"),
   );
 
   const attachments: ParsedAttachment[] = [];
@@ -214,9 +164,9 @@ async function parseEmail(
     // It is opt-in so it doesn't destroy downstream AI prompts.
     bodyHtml: includeHtml
       ? truncate(
-        typeof parsed.html === "string" ? parsed.html : "",
-        MAX_BODY_HTML_CHARS
-      )
+          typeof parsed.html === "string" ? parsed.html : "",
+          MAX_BODY_HTML_CHARS,
+        )
       : "",
     attachments,
   };
@@ -225,7 +175,7 @@ async function parseEmail(
 /** Decode a raw RFC822 header block into the small preview we filter on. */
 async function parseHeaderBlock(
   uid: number,
-  rawHeaders: string
+  rawHeaders: string,
 ): Promise<EmailHeader> {
   const parsed = await simpleParser(Buffer.from(rawHeaders, "utf-8"));
   const fromAddress = parsed.from?.value?.[0]?.address || "";
@@ -266,8 +216,8 @@ function connect(email: string, appPassword: string): Promise<Imap> {
       settled = true;
       reject(
         new NonRetriableError(
-          `Gmail: Connection failed: ${err.message}. Check the email address and app password on the credential.`
-        )
+          `Gmail: Connection failed: ${err.message}. Check the email address and app password on the credential.`,
+        ),
       );
     });
 
@@ -278,15 +228,15 @@ function connect(email: string, appPassword: string): Promise<Imap> {
 function openBox(
   imap: Imap,
   mailbox: string,
-  readOnly: boolean
+  readOnly: boolean,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     imap.openBox(mailbox, readOnly, (err) => {
       if (err) {
         reject(
           new NonRetriableError(
-            `Gmail: Failed to open mailbox "${mailbox}": ${err.message}`
-          )
+            `Gmail: Failed to open mailbox "${mailbox}": ${err.message}`,
+          ),
         );
         return;
       }
@@ -320,7 +270,7 @@ function fetchBodies(
   imap: Imap,
   uids: number[],
   bodies: string,
-  markSeen: boolean
+  markSeen: boolean,
 ): Promise<Map<number, string>> {
   return new Promise((resolve, reject) => {
     const out = new Map<number, string>();
@@ -402,7 +352,7 @@ async function fetchEmails(
     markAsRead: boolean;
     requireAttachments: boolean;
     maxEmails: number;
-  }
+  },
 ): Promise<FetchResult> {
   const imap = await connect(email, appPassword);
 
@@ -428,7 +378,7 @@ async function fetchEmails(
     const ordered = [...candidateUids].sort((a, b) => b - a);
     const scanLimit = Math.min(
       ordered.length,
-      Math.max(options.maxEmails * 20, 200)
+      Math.max(options.maxEmails * 20, 200),
     );
     const toScan = ordered.slice(0, scanLimit);
 
@@ -436,13 +386,16 @@ async function fetchEmails(
       imap,
       toScan,
       "HEADER.FIELDS (FROM TO SUBJECT DATE)",
-      false // never mark seen during the scan pass
+      false, // never mark seen during the scan pass
     );
 
     const headers: EmailHeader[] = [];
     for (const [uid, raw] of headerRaw) {
       headers.push(
-        await parseHeaderBlock(uid, Buffer.from(raw, "base64").toString("utf-8"))
+        await parseHeaderBlock(
+          uid,
+          Buffer.from(raw, "base64").toString("utf-8"),
+        ),
       );
     }
 
@@ -468,7 +421,7 @@ async function fetchEmails(
       imap,
       selected.map((h) => h.uid),
       "",
-      options.markAsRead
+      options.markAsRead,
     );
 
     const messages = selected
@@ -512,7 +465,7 @@ export const gmailReaderExecutor: NodeExecutor<GmailReaderData> = async ({
   const credential = await step.run("gmail-get-credential", () =>
     prisma.credential.findUnique({
       where: { id: data.credentialId, userId },
-    })
+    }),
   );
 
   if (!credential) {
@@ -527,7 +480,7 @@ export const gmailReaderExecutor: NodeExecutor<GmailReaderData> = async ({
     const separatorIndex = decryptedValue.indexOf(":");
     if (separatorIndex === -1) {
       throw new NonRetriableError(
-        "Gmail Reader: Invalid credential format. Expected 'email:appPassword'."
+        "Gmail Reader: Invalid credential format. Expected 'email:appPassword'.",
       );
     }
     const email = decryptedValue.substring(0, separatorIndex);
@@ -554,7 +507,7 @@ export const gmailReaderExecutor: NodeExecutor<GmailReaderData> = async ({
           markAsRead: data.markAsRead !== false, // default true — see note below
           requireAttachments,
           maxEmails,
-        })
+        }),
     );
 
     const emails = await step.run("gmail-parse-emails", async () => {

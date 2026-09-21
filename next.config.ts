@@ -6,15 +6,13 @@ const nextConfig: NextConfig = {
 
   // Keep these out of the server bundle.
   //
-  // pdf-parse v2 ships pdfjs plus a sibling `pdf.worker.mjs`. When Next bundles
-  // it into .next/server/chunks, that worker file is not emitted alongside it
-  // and pdfjs dies with:
-  //   Setting up fake worker failed: Cannot find module '.../chunks/pdf.worker.mjs'
-  // Marking it external makes it load from node_modules at runtime, where the
-  // worker sits right next to the entry point as the package expects.
+  // unpdf bundles its own serverless build of PDF.js; bundling it a second
+  // time through webpack risks resolving the wrong entry point (the one that
+  // expects a browser canvas) instead of the serverless one we want.
   //
-  // mammoth and imap are CommonJS with dynamic requires and behave the same way.
-  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "mammoth", "imap"],
+  // mammoth and imap are CommonJS with dynamic requires and misbehave under
+  // webpack the same way.
+  serverExternalPackages: ["unpdf", "mammoth", "imap"],
 
   webpack: (config, { isServer, webpack }) => {
     // handlebars uses require.extensions (CJS-only, works fine at runtime) and
