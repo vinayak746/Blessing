@@ -83,7 +83,7 @@ export const EntityHeader = ({
           disabled={isCreating || disabled}
           size="sm"
           className={cn(
-            "transition-all active:scale-[0.98]",
+            "transition-[background-color,border-color,color,box-shadow] active:scale-[0.98]",
             newButtonClassName,
           )}
           onClick={onNew}
@@ -96,7 +96,7 @@ export const EntityHeader = ({
         <Button
           size="sm"
           className={cn(
-            "transition-all active:scale-[0.98]",
+            "transition-[background-color,border-color,color,box-shadow] active:scale-[0.98]",
             newButtonClassName,
           )}
           asChild
@@ -210,7 +210,7 @@ export const EntityPagination = ({
           disabled={page === 1 || disabled}
           variant="outline"
           size="sm"
-          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/65 hover:text-foreground active:scale-[0.98] transition-all"
+          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/65 hover:text-foreground active:scale-[0.98] transition-[background-color,border-color,color,box-shadow]"
           onClick={() => onPageChange(Math.max(1, page - 1))}
         >
           Previous
@@ -219,7 +219,7 @@ export const EntityPagination = ({
           disabled={page === totalPages || totalPages === 0 || disabled}
           variant="outline"
           size="sm"
-          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/65 hover:text-foreground hover:translate-y-0 active:scale-[0.98] transition-all"
+          className="min-w-20 border-border/80 bg-background/90 hover:bg-accent/70 hover:border-primary/65 hover:text-foreground active:scale-[0.98] transition-[background-color,border-color,color,box-shadow]"
           onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         >
           Next
@@ -388,7 +388,7 @@ export const EntityItem = ({
       >
         <Card
           className={cn(
-            "p-4 border-border/80 bg-card dark:bg-card/90 shadow-none cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-primary/80 hover:bg-accent/55 dark:hover:border-primary/65 dark:hover:bg-accent/35",
+            "p-4 border-border/80 bg-card dark:bg-card/90 shadow-none cursor-pointer transition-[background-color,border-color,color,box-shadow] duration-200 hover:border-primary/80 hover:bg-accent/55 dark:hover:border-primary/65 dark:hover:bg-accent/35",
             isRemoving && "opacity-50 cursor-not-allowed",
             className,
           )}

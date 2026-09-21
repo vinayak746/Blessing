@@ -118,13 +118,13 @@ export function LandingHero() {
         >
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 bg-[#4A2010] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-[#6B3A1F] dark:hover:bg-[#c4a030] transition-all duration-200 shadow-lg shadow-[#4A2010]/30 dark:shadow-primary/20 hover:scale-[1.04] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 bg-[#4A2010] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-[#6B3A1F] dark:hover:bg-[#c4a030] transition-[background-color,border-color,box-shadow] duration-200 shadow-lg shadow-[#4A2010]/30 dark:shadow-primary/20"
           >
             Start Building Free →
           </Link>
           <Link
             href="#how-it-works"
-            className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-semibold text-base px-8 py-3.5 rounded-xl hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-semibold text-base px-8 py-3.5 rounded-xl hover:border-primary transition-[background-color,border-color,box-shadow] duration-200"
           >
             See how it works
           </Link>

@@ -15,6 +15,7 @@ import { discordChannel } from "./channels/discord";
 import { slackChannel } from "./channels/slack";
 import { whatsappChannel } from "./channels/whatsapp";
 import { selfHealingChannel } from "./channels/self-healing";
+import { gmailReaderChannel } from "./channels/gmail-reader";
 import { attemptHealing, type HealerConfig } from "./healing";
 
 export const executeWorkflow = inngest.createFunction(
@@ -46,6 +47,7 @@ export const executeWorkflow = inngest.createFunction(
       slackChannel(),
       whatsappChannel(),
       selfHealingChannel(),
+      gmailReaderChannel(),
     ],
   },
   async ({ event, step, publish }) => {

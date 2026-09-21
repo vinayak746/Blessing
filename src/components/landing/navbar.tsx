@@ -49,7 +49,7 @@ export function LandingNavbar() {
           </Link>
           <Link
             href="/signup"
-            className="text-sm font-semibold bg-[#4A2010] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground px-4 py-2 rounded-lg hover:bg-[#6B3A1F] dark:hover:bg-[#c4a030] transition-all hover:scale-[1.03] active:scale-[0.97]"
+            className="text-sm font-semibold bg-[#4A2010] dark:bg-primary text-[#fdfaf3] dark:text-primary-foreground px-4 py-2 rounded-lg hover:bg-[#6B3A1F] dark:hover:bg-[#c4a030] transition-[background-color,border-color] duration-200"
           >
             Get Started
           </Link>

@@ -90,6 +90,7 @@ enum CredentialType {
   ANTHROPIC
   GEMINI
   WHATSAPP
+  GMAIL
 }
 
 model Workflow{
@@ -121,6 +122,7 @@ enum NodeType {
   SLACK
   WHATSAPP
   SELF_HEALING
+  GMAIL_READER
 }
 
 model Node {

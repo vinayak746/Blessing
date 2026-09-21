@@ -93,6 +93,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Send WhatsApp messages to your contacts.",
     icon: "/logos/whatsapp.svg",
   },
+  {
+    type: NodeType.GMAIL_READER,
+    label: "Gmail Reader",
+    description: "Read emails from Gmail. Use with AI nodes to process email content.",
+    icon: "/logos/gmail.svg",
+  },
 ];
 
 const utilityNodes: NodeTypeOption[] = [

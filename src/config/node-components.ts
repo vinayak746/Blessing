@@ -12,6 +12,7 @@ import { DiscordNode } from "@/features/executions/components/discord/node";
 import { SlackNode } from "@/features/executions/components/slack/node";
 import { WhatsAppNode } from "@/features/executions/components/whatsapp/node";
 import { SelfHealingNode } from "@/features/executions/components/self-healing/node";
+import { GmailReaderNode } from "@/features/executions/components/gmail-reader/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -26,6 +27,7 @@ export const nodeComponents = {
   [NodeType.SLACK]: SlackNode,
   [NodeType.WHATSAPP]: WhatsAppNode,
   [NodeType.SELF_HEALING]: SelfHealingNode,
+  [NodeType.GMAIL_READER]: GmailReaderNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

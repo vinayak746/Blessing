@@ -1,19 +1,46 @@
-import {withSentryConfig} from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  devIndicators:false,
-  webpack: (config, { isServer }) => {
-    // Suppress handlebars webpack warning about require.extensions
-    // Handlebars uses CommonJS require.extensions which webpack doesn't support,
-    // but it works fine at runtime on the server side
-    if (!isServer) {
-      config.ignoreWarnings = (config.ignoreWarnings || []).concat([
-        { module: /handlebars/ },
-      ]);
+  devIndicators: false,
+
+  // Keep these out of the server bundle.
+  //
+  // pdf-parse v2 ships pdfjs plus a sibling `pdf.worker.mjs`. When Next bundles
+  // it into .next/server/chunks, that worker file is not emitted alongside it
+  // and pdfjs dies with:
+  //   Setting up fake worker failed: Cannot find module '.../chunks/pdf.worker.mjs'
+  // Marking it external makes it load from node_modules at runtime, where the
+  // worker sits right next to the entry point as the package expects.
+  //
+  // mammoth and imap are CommonJS with dynamic requires and behave the same way.
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "mammoth", "imap"],
+
+  webpack: (config, { isServer, webpack }) => {
+    // handlebars uses require.extensions (CJS-only, works fine at runtime) and
+    // @opentelemetry/instrumentation-winston optionally requires a transport we
+    // don't install. Both are warnings only — silence them on BOTH the client
+    // and the server build. The previous `if (!isServer)` guard missed the
+    // server pass, which is where they actually fire.
+    config.ignoreWarnings = (config.ignoreWarnings || []).concat([
+      { module: /handlebars/ },
+      { module: /@opentelemetry/ },
+      { message: /require\.extensions is not supported by webpack/ },
+      { message: /Can't resolve '@opentelemetry\/winston-transport'/ },
+    ]);
+
+    if (isServer) {
+      // Never attempt to bundle the optional winston transport.
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^@opentelemetry\/winston-transport$/,
+        }),
+      );
     }
+
     return config;
   },
+
   experimental: {
     // Tree-shake barrel exports from heavy packages
     optimizePackageImports: [
@@ -30,7 +57,11 @@ export default withSentryConfig(nextConfig, {
   project: "blessing",
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  tunnelRoute: process.env.NODE_ENV === "production" ? "/monitoring" : undefined,
-  disableLogger: true,
-  automaticVercelMonitors: true,
+  tunnelRoute:
+    process.env.NODE_ENV === "production" ? "/monitoring" : undefined,
+  // `disableLogger` and `automaticVercelMonitors` are deprecated in the current
+  // @sentry/nextjs. Their replacements:
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+  },
 });

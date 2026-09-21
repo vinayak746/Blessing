@@ -82,7 +82,7 @@ export const WorkflowTemplates = ({
           {templates.map((template) => (
             <Card
               key={template.id}
-              className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
+              className="cursor-pointer hover:border-primary hover:shadow-md transition-[border-color,box-shadow] duration-200"
               onClick={() => {
                 onSelectTemplate(template.id);
                 onOpenChange(false);
@@ -110,7 +110,7 @@ export const WorkflowTemplates = ({
         <div className="flex justify-center mt-4">
           <Button
             variant="outline"
-            className="hover:-translate-y-1 active:translate-y-0"
+            className=""
             onClick={() => {
               onSelectTemplate("blank");
               onOpenChange(false);
