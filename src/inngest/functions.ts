@@ -1,7 +1,13 @@
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
-import { topologicalSort } from "./utils";
+import {
+  topologicalSort,
+  isNodeReachable,
+  extractBranch,
+  ALL_OUTPUTS,
+  type FiredOutputs,
+} from "./utils";
 import { ExecutionStatus, NodeType } from "@prisma/client";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { httpRequestChannel } from "./channels/http-request";
@@ -16,6 +22,7 @@ import { slackChannel } from "./channels/slack";
 import { whatsappChannel } from "./channels/whatsapp";
 import { selfHealingChannel } from "./channels/self-healing";
 import { gmailReaderChannel } from "./channels/gmail-reader";
+import { ifElseChannel } from "./channels/if-else";
 import { attemptHealing, type HealerConfig } from "./healing";
 
 export const executeWorkflow = inngest.createFunction(
@@ -48,6 +55,7 @@ export const executeWorkflow = inngest.createFunction(
       whatsappChannel(),
       selfHealingChannel(),
       gmailReaderChannel(),
+      ifElseChannel(),
     ],
   },
   async ({ event, step, publish }) => {
@@ -67,14 +75,26 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    const sortedNodes = await step.run("prepare-workflow", async () => {
-      const workflow = await prisma.workflow.findUniqueOrThrow({
-        where: { id: workflowId },
-        include: { nodes: true, connections: true },
-      });
+    const { sortedNodes, connections } = await step.run(
+      "prepare-workflow",
+      async () => {
+        const workflow = await prisma.workflow.findUniqueOrThrow({
+          where: { id: workflowId },
+          include: { nodes: true, connections: true },
+        });
 
-      return topologicalSort(workflow.nodes, workflow.connections);
-    });
+        return {
+          sortedNodes: topologicalSort(workflow.nodes, workflow.connections),
+          // Only what the reachability gate needs; keeps the memoized step
+          // payload small.
+          connections: workflow.connections.map((c) => ({
+            fromNodeId: c.fromNodeId,
+            toNodeId: c.toNodeId,
+            fromOutput: c.fromOutput,
+          })),
+        };
+      },
+    );
     const userId = await step.run("find-user-id", async () => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: workflowId },
@@ -90,9 +110,13 @@ export const executeWorkflow = inngest.createFunction(
     // This tells us which nodes have a self-healing parent protecting them.
     const healingMap = await step.run("build-healing-map", async () => {
       const selfHealingNodes = sortedNodes.filter(
-        (n) => n.type === NodeType.SELF_HEALING
+        (n) => n.type === NodeType.SELF_HEALING,
       );
-      if (selfHealingNodes.length === 0) return {} as Record<string, { healerNodeId: string; healerConfig: HealerConfig }>;
+      if (selfHealingNodes.length === 0)
+        return {} as Record<
+          string,
+          { healerNodeId: string; healerConfig: HealerConfig }
+        >;
 
       const healerIds = selfHealingNodes.map((n) => n.id);
       const connections = await prisma.connection.findMany({
@@ -101,15 +125,18 @@ export const executeWorkflow = inngest.createFunction(
       });
 
       const configById = Object.fromEntries(
-        selfHealingNodes.map((n) => [n.id, (n.data || {}) as HealerConfig])
+        selfHealingNodes.map((n) => [n.id, (n.data || {}) as HealerConfig]),
       );
 
-      const map: Record<string, { healerNodeId: string; healerConfig: HealerConfig }> = {};
+      const map: Record<
+        string,
+        { healerNodeId: string; healerConfig: HealerConfig }
+      > = {};
 
       for (const conn of connections) {
         if (map[conn.toNodeId]) {
           throw new NonRetriableError(
-            `Node ${conn.toNodeId} is protected by multiple self-healing nodes (${map[conn.toNodeId].healerNodeId} and ${conn.fromNodeId}). Each node may only have one self-healing parent.`
+            `Node ${conn.toNodeId} is protected by multiple self-healing nodes (${map[conn.toNodeId].healerNodeId} and ${conn.fromNodeId}). Each node may only have one self-healing parent.`,
           );
         }
         map[conn.toNodeId] = {
@@ -121,6 +148,21 @@ export const executeWorkflow = inngest.createFunction(
       return map;
     });
 
+    // What each executed node fired; a node id missing from the map was
+    // skipped. Every node that runs is stamped ALL_OUTPUTS (every handle,
+    // whatever it is called), so nothing about workflows without a branching
+    // node changes. A future IF/Switch node will instead record the specific
+    // handle(s) it chose, and `isNodeReachable` will skip what's behind the
+    // others. See ./utils.
+    const firedOutputs: FiredOutputs = {};
+
+    // Self-healing edges are config, not data flow; the gate ignores them.
+    const configNodeIds = new Set(
+      sortedNodes
+        .filter((n) => n.type === NodeType.SELF_HEALING)
+        .map((n) => n.id),
+    );
+
     // Execute each node in topological order
     for (const node of sortedNodes) {
       // Self-healing nodes don't execute themselves — they only provide config
@@ -128,8 +170,17 @@ export const executeWorkflow = inngest.createFunction(
       if (node.type === NodeType.SELF_HEALING) {
         // Just publish success so the UI shows it's active
         await publish(
-          selfHealingChannel().status({ nodeId: node.id, status: "success" })
+          selfHealingChannel().status({ nodeId: node.id, status: "success" }),
         );
+        firedOutputs[node.id] = ALL_OUTPUTS;
+        continue;
+      }
+
+      if (!isNodeReachable(node.id, connections, firedOutputs, configNodeIds)) {
+        // Every path into this node came from a branch that wasn't taken.
+        // This happens when a conditional node (IF / Else) chose another branch.
+        // When a conditional node ships, publish a "skipped" status here so
+        // the canvas doesn't show the node as if it never ran.
         continue;
       }
 
@@ -138,14 +189,18 @@ export const executeWorkflow = inngest.createFunction(
 
       if (!healer) {
         // No self-healing parent — run normally
-        context = await executor({
-          data: node.data as Record<string, unknown>,
-          nodeId: node.id,
-          userId,
-          context,
-          step,
-          publish,
-        });
+        const branch = extractBranch(
+          await executor({
+            data: node.data as Record<string, unknown>,
+            nodeId: node.id,
+            userId,
+            context,
+            step,
+            publish,
+          }),
+        );
+        context = branch.context;
+        firedOutputs[node.id] = branch.fired;
         continue;
       }
 
@@ -163,12 +218,14 @@ export const executeWorkflow = inngest.createFunction(
           publish,
         });
       } catch (error) {
-        targetError =
-          error instanceof Error ? error.message : String(error);
+        targetError = error instanceof Error ? error.message : String(error);
       }
 
       if (targetError === null) {
         // Target succeeded on first try — nothing to heal
+        const branch = extractBranch(context);
+        context = branch.context;
+        firedOutputs[node.id] = branch.fired;
         continue;
       }
 
@@ -177,7 +234,7 @@ export const executeWorkflow = inngest.createFunction(
         selfHealingChannel().status({
           nodeId: healer.healerNodeId,
           status: "healing",
-        })
+        }),
       );
 
       let result: Awaited<ReturnType<typeof attemptHealing>>;
@@ -198,24 +255,28 @@ export const executeWorkflow = inngest.createFunction(
           selfHealingChannel().status({
             nodeId: healer.healerNodeId,
             status: "error",
-          })
+          }),
         );
         throw healingCrash;
       }
 
       if (result.healed) {
-        context = result.context;
+        const healedBranch = extractBranch(result.context);
+        context = healedBranch.context;
         // Merge healing metadata into context under the healer's variable name
         const varName = healer.healerConfig.variableName;
         if (varName) {
-          const sanitizedLog = result.log.map(({ attempt, confidence, changes }) => ({
-            attempt,
-            confidence,
-            hadChanges: Object.keys(changes).length > 0,
-          }));
-          const existing = typeof context[varName] === "object" && context[varName] !== null
-            ? context[varName] as Record<string, unknown>
-            : {};
+          const sanitizedLog = result.log.map(
+            ({ attempt, confidence, changes }) => ({
+              attempt,
+              confidence,
+              hadChanges: Object.keys(changes).length > 0,
+            }),
+          );
+          const existing =
+            typeof context[varName] === "object" && context[varName] !== null
+              ? (context[varName] as Record<string, unknown>)
+              : {};
           context[varName] = {
             ...existing,
             selfHealing: {
@@ -229,20 +290,24 @@ export const executeWorkflow = inngest.createFunction(
           selfHealingChannel().status({
             nodeId: healer.healerNodeId,
             status: "success",
-          })
+          }),
         );
+        firedOutputs[node.id] = healedBranch.fired;
       } else {
         // Healing failed — add metadata and publish error
         const varName = healer.healerConfig.variableName;
         if (varName) {
-          const sanitizedLog = result.log.map(({ attempt, confidence, changes }) => ({
-            attempt,
-            confidence,
-            hadChanges: Object.keys(changes).length > 0,
-          }));
-          const existing = typeof context[varName] === "object" && context[varName] !== null
-            ? context[varName] as Record<string, unknown>
-            : {};
+          const sanitizedLog = result.log.map(
+            ({ attempt, confidence, changes }) => ({
+              attempt,
+              confidence,
+              hadChanges: Object.keys(changes).length > 0,
+            }),
+          );
+          const existing =
+            typeof context[varName] === "object" && context[varName] !== null
+              ? (context[varName] as Record<string, unknown>)
+              : {};
           context[varName] = {
             ...existing,
             selfHealing: {
@@ -257,7 +322,7 @@ export const executeWorkflow = inngest.createFunction(
           selfHealingChannel().status({
             nodeId: healer.healerNodeId,
             status: "error",
-          })
+          }),
         );
         // Persist failure metadata before throwing so it's durable
         await step.run("persist-healing-failure", async () => {
@@ -269,7 +334,7 @@ export const executeWorkflow = inngest.createFunction(
         // Healing failed — throw so the execution is marked FAILED
         throw new NonRetriableError(
           `Self-Healing failed after ${result.attempts}/${result.maxAttempts} attempts. ` +
-          `Last error: ${result.log[result.log.length - 1]?.error || "Unknown error"}`
+            `Last error: ${result.log[result.log.length - 1]?.error || "Unknown error"}`,
         );
       }
     }
@@ -290,5 +355,5 @@ export const executeWorkflow = inngest.createFunction(
       workflowId,
       result: context,
     };
-  }
+  },
 );

@@ -123,6 +123,7 @@ enum NodeType {
   WHATSAPP
   SELF_HEALING
   GMAIL_READER
+  IF_ELSE
 }
 
 model Node {

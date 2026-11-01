@@ -78,7 +78,7 @@
   --card-foreground: #1a1408;
   --popover: #fffaf0;
   --popover-foreground: #1a1408;
-  --primary: #8B5A2B;
+  --primary: #8b5a2b;
   --primary-foreground: #fff8f0;
   --secondary: #e8ddc0;
   --secondary-foreground: #2b2311;
@@ -89,7 +89,7 @@
   --destructive: #b35b29;
   --border: #d2bf8d;
   --input: #dcc998;
-  --ring: #8B5A2B;
+  --ring: #8b5a2b;
   --chart-1: #f5d97c;
   --chart-2: #d4af37;
   --chart-3: #8f7535;
@@ -97,12 +97,12 @@
   --chart-5: #3b3452;
   --sidebar: #faf5e6;
   --sidebar-foreground: #1a1408;
-  --sidebar-primary: #8B5A2B;
+  --sidebar-primary: #8b5a2b;
   --sidebar-primary-foreground: #fff8f0;
   --sidebar-accent: #f9e6b5;
   --sidebar-accent-foreground: #2a1d07;
   --sidebar-border: #d7c396;
-  --sidebar-ring: #8B5A2B;
+  --sidebar-ring: #8b5a2b;
   --destructive-foreground: #fffaf2;
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
@@ -117,15 +117,20 @@
   --spacing: 0.25rem;
   --shadow-2xs: 0px 1px 3px 0px hsl(38 30% 10% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(38 30% 10% / 0.05);
-  --shadow-sm: 0px 1px 3px 0px hsl(38 30% 10% / 0.1),
+  --shadow-sm:
+    0px 1px 3px 0px hsl(38 30% 10% / 0.1),
     0px 1px 2px -1px hsl(38 30% 10% / 0.1);
-  --shadow: 0px 1px 3px 0px hsl(38 30% 10% / 0.1),
+  --shadow:
+    0px 1px 3px 0px hsl(38 30% 10% / 0.1),
     0px 1px 2px -1px hsl(38 30% 10% / 0.1);
-  --shadow-md: 0px 1px 3px 0px hsl(38 30% 10% / 0.1),
+  --shadow-md:
+    0px 1px 3px 0px hsl(38 30% 10% / 0.1),
     0px 2px 4px -1px hsl(38 30% 10% / 0.1);
-  --shadow-lg: 0px 1px 3px 0px hsl(38 30% 10% / 0.1),
+  --shadow-lg:
+    0px 1px 3px 0px hsl(38 30% 10% / 0.1),
     0px 4px 6px -1px hsl(38 30% 10% / 0.1);
-  --shadow-xl: 0px 1px 3px 0px hsl(38 30% 10% / 0.1),
+  --shadow-xl:
+    0px 1px 3px 0px hsl(38 30% 10% / 0.1),
     0px 8px 10px -1px hsl(38 30% 10% / 0.1);
   --shadow-2xl: 0px 1px 3px 0px hsl(38 30% 10% / 0.25);
   --tracking-normal: 0em;
@@ -186,15 +191,17 @@
   --spacing: 0.25rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(30 30% 3% / 0.15);
   --shadow-xs: 0px 1px 3px 0px hsl(30 30% 3% / 0.2);
-  --shadow-sm: 0px 1px 3px 0px hsl(30 30% 3% / 0.25),
-    0px 1px 2px -1px hsl(30 30% 3% / 0.2);
-  --shadow: 0px 2px 4px 0px hsl(30 30% 3% / 0.3),
-    0px 1px 2px -1px hsl(30 30% 3% / 0.2);
-  --shadow-md: 0px 4px 6px -1px hsl(30 30% 3% / 0.3),
-    0px 2px 4px -2px hsl(30 30% 3% / 0.2);
-  --shadow-lg: 0px 8px 10px -3px hsl(30 30% 3% / 0.3),
+  --shadow-sm:
+    0px 1px 3px 0px hsl(30 30% 3% / 0.25), 0px 1px 2px -1px hsl(30 30% 3% / 0.2);
+  --shadow:
+    0px 2px 4px 0px hsl(30 30% 3% / 0.3), 0px 1px 2px -1px hsl(30 30% 3% / 0.2);
+  --shadow-md:
+    0px 4px 6px -1px hsl(30 30% 3% / 0.3), 0px 2px 4px -2px hsl(30 30% 3% / 0.2);
+  --shadow-lg:
+    0px 8px 10px -3px hsl(30 30% 3% / 0.3),
     0px 4px 6px -4px hsl(30 30% 3% / 0.2);
-  --shadow-xl: 0px 16px 20px -5px hsl(30 30% 3% / 0.3),
+  --shadow-xl:
+    0px 16px 20px -5px hsl(30 30% 3% / 0.3),
     0px 8px 10px -6px hsl(30 30% 3% / 0.2);
   --shadow-2xl: 0px 24px 40px -8px hsl(30 30% 3% / 0.45);
   --minimap-mask: rgba(7, 6, 5, 0.84);
@@ -219,9 +226,21 @@
 /* Dark mode dashboard backdrop */
 .dark .dark-dashboard-bg {
   background:
-    radial-gradient(1100px circle at 0% -5%, rgba(232, 199, 91, 0.09), transparent 42%),
-    radial-gradient(820px circle at 100% -15%, rgba(240, 215, 122, 0.05), transparent 40%),
-    radial-gradient(1000px circle at 95% 95%, rgba(232, 199, 91, 0.12), transparent 50%),
+    radial-gradient(
+      1100px circle at 0% -5%,
+      rgba(232, 199, 91, 0.09),
+      transparent 42%
+    ),
+    radial-gradient(
+      820px circle at 100% -15%,
+      rgba(240, 215, 122, 0.05),
+      transparent 40%
+    ),
+    radial-gradient(
+      1000px circle at 95% 95%,
+      rgba(232, 199, 91, 0.12),
+      transparent 50%
+    ),
     linear-gradient(180deg, #0f0c09 0%, #090705 45%, #070605 100%);
 }
 
@@ -244,6 +263,61 @@
 
 .react-flow__node.selected [data-node-type="base-node"] {
   @apply ring-3 ring-muted-foreground/25 shadow-lg;
+}
+/* ── ReactFlow theming (both modes) ──
+   The dark-mode block below already themed the canvas furniture; light mode
+   fell back to React Flow's white defaults (a white minimap on a cream
+   canvas, faint grey edges). These use the theme variables, so they follow
+   whichever mode is active; the dark rules below still win where they exist. */
+.react-flow__minimap {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.react-flow__minimap-mask {
+  fill: var(--minimap-mask) !important;
+}
+
+.react-flow__minimap-node {
+  fill: var(--minimap-node) !important;
+  stroke: var(--minimap-node-stroke) !important;
+}
+
+.react-flow__controls {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+.react-flow__controls-button {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--foreground) !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--muted) !important;
+}
+
+/* Connections: clearer than React Flow's default 1px light grey */
+.react-flow__edge-path {
+  stroke: #9a8350;
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--primary);
+  stroke-width: 2.5;
+}
+
+.react-flow__connection-line {
+  stroke: var(--primary);
+  stroke-width: 2;
 }
 
 /* ── ReactFlow dark mode overrides ── */
@@ -326,12 +400,18 @@ ol li::marker {
 
 /* ── Marquee (3 copies → shift by one-third for seamless loop) ── */
 @keyframes marquee {
-  0%   { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-33.3333%, 0, 0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-33.3333%, 0, 0);
+  }
 }
 
 @keyframes shimmer {
-  100% { transform: translate3d(100%, 0, 0); }
+  100% {
+    transform: translate3d(100%, 0, 0);
+  }
 }
 
 .skeleton-shimmer {
@@ -412,44 +492,85 @@ ol li::marker {
 
 /* ── Landing page CSS animations (replaces framer-motion) ── */
 @keyframes slide-down {
-  from { opacity: 0; transform: translate3d(0, -64px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, -64px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translate3d(0, 36px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 36px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Blob breathing — only scales, never touches opacity (let Tailwind own opacity) */
 @keyframes scale-breath {
-  0%, 100% { transform: scale3d(1, 1, 1); }
-  50%      { transform: scale3d(1.12, 1.12, 1); }
+  0%,
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    transform: scale3d(1.12, 1.12, 1);
+  }
 }
 
 @keyframes drift-left {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50%      { transform: translate3d(30px, -20px, 0); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(30px, -20px, 0);
+  }
 }
 
 @keyframes drift-right {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50%      { transform: translate3d(-30px, 20px, 0); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-30px, 20px, 0);
+  }
 }
 
 @keyframes blob-pulse {
-  0%, 100% { transform: scale3d(1, 1, 1); }
-  50%      { transform: scale3d(1.2, 1.2, 1); }
+  0%,
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    transform: scale3d(1.2, 1.2, 1);
+  }
 }
 
 @keyframes blob-pulse-slow {
-  0%, 100% { transform: scale3d(1, 1, 1); }
-  50%      { transform: scale3d(1.15, 1.15, 1); }
+  0%,
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    transform: scale3d(1.15, 1.15, 1);
+  }
 }
 
 /* ── Utility classes ── */
@@ -461,8 +582,9 @@ ol li::marker {
 .animate-fade-in-up {
   opacity: 0;
   transform: translate3d(0, 36px, 0);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform, opacity;
 }
 
@@ -471,8 +593,18 @@ ol li::marker {
   transform: translate3d(0, 0, 0);
 }
 
-.stagger-1 { transition-delay: 0.08s; }
-.stagger-2 { transition-delay: 0.16s; }
-.stagger-3 { transition-delay: 0.24s; }
-.stagger-4 { transition-delay: 0.32s; }
-.stagger-5 { transition-delay: 0.4s; }
+.stagger-1 {
+  transition-delay: 0.08s;
+}
+.stagger-2 {
+  transition-delay: 0.16s;
+}
+.stagger-3 {
+  transition-delay: 0.24s;
+}
+.stagger-4 {
+  transition-delay: 0.32s;
+}
+.stagger-5 {
+  transition-delay: 0.4s;
+}

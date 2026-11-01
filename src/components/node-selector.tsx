@@ -2,9 +2,16 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MousePointerIcon, SearchIcon, XIcon } from "lucide-react";
+import {
+  GitBranchIcon,
+  GlobeIcon,
+  MousePointerIcon,
+  SearchIcon,
+  XIcon,
+} from "lucide-react";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { LAYOUT, findFreePosition } from "@/features/editor/lib/auto-layout";
 import { needsDarkInvert } from "@/lib/utils";
 import {
   Sheet,
@@ -30,22 +37,19 @@ const triggerNodes: NodeTypeOption[] = [
   {
     type: NodeType.MANUAL_TRIGGER,
     label: "Trigger Manually",
-    description:
-      "Click a button to run your workflow. Perfect for testing!",
+    description: "Click a button to run your workflow. Perfect for testing!",
     icon: MousePointerIcon,
   },
   {
     type: NodeType.GOOGLE_FORM_TRIGGER,
     label: "Google Form",
-    description:
-      "Automatically runs when someone submits your Google Form.",
+    description: "Automatically runs when someone submits your Google Form.",
     icon: "/logos/googleform.svg",
   },
   {
     type: NodeType.STRIPE_TRIGGER,
     label: "Stripe Event",
-    description:
-      "Automatically runs when payments or subscriptions happen.",
+    description: "Automatically runs when payments or subscriptions happen.",
     icon: "/logos/stripe.svg",
   },
 ];
@@ -66,7 +70,8 @@ const executionNodes: NodeTypeOption[] = [
   {
     type: NodeType.OPENAI,
     label: "OpenAI",
-    description: "Use ChatGPT to generate text, summaries, or creative content.",
+    description:
+      "Use ChatGPT to generate text, summaries, or creative content.",
     icon: "/logos/openai.svg",
   },
   {
@@ -96,16 +101,25 @@ const executionNodes: NodeTypeOption[] = [
   {
     type: NodeType.GMAIL_READER,
     label: "Gmail Reader",
-    description: "Read emails from Gmail. Use with AI nodes to process email content.",
+    description:
+      "Read emails from Gmail. Use with AI nodes to process email content.",
     icon: "/logos/gmail.svg",
   },
 ];
 
 const utilityNodes: NodeTypeOption[] = [
   {
+    type: NodeType.IF_ELSE,
+    label: "If / Else",
+    description:
+      "Make a decision: do one thing when something is true (Yes) and something else when it isn't (No).",
+    icon: GitBranchIcon,
+  },
+  {
     type: NodeType.SELF_HEALING,
     label: "Self-Healing",
-    description: "AI-powered error recovery. Wraps the next node and auto-fixes failures.",
+    description:
+      "AI-powered error recovery. Wraps the next node and auto-fixes failures.",
     icon: ShieldAlertIcon,
   },
 ];
@@ -121,7 +135,8 @@ export function NodeSelector({
   onOpenChange,
   children,
 }: NodeSelectorProps) {
-  const { setNodes, getNodes, screenToFlowPosition } = useReactFlow();
+  const { setNodes, getNodes, screenToFlowPosition, setCenter, getViewport } =
+    useReactFlow();
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,7 +158,7 @@ export function NodeSelector({
     return triggerNodes.filter(
       (node) =>
         node.label.toLowerCase().includes(query) ||
-        node.description.toLowerCase().includes(query)
+        node.description.toLowerCase().includes(query),
     );
   }, [searchQuery]);
 
@@ -153,7 +168,7 @@ export function NodeSelector({
     return executionNodes.filter(
       (node) =>
         node.label.toLowerCase().includes(query) ||
-        node.description.toLowerCase().includes(query)
+        node.description.toLowerCase().includes(query),
     );
   }, [searchQuery]);
 
@@ -163,11 +178,14 @@ export function NodeSelector({
     return utilityNodes.filter(
       (node) =>
         node.label.toLowerCase().includes(query) ||
-        node.description.toLowerCase().includes(query)
+        node.description.toLowerCase().includes(query),
     );
   }, [searchQuery]);
 
-  const hasResults = filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0 || filteredUtilityNodes.length > 0;
+  const hasResults =
+    filteredTriggerNodes.length > 0 ||
+    filteredExecutionNodes.length > 0 ||
+    filteredUtilityNodes.length > 0;
 
   const handleNodeSelect = useCallback(
     (selection: NodeTypeOption) => {
@@ -182,17 +200,43 @@ export function NodeSelector({
           return;
         }
       }
+      // Place the new node to the right of the selected node (or the most
+      // recently added one), on a free spot, so nodes build up as a clean
+      // left-to-right flow instead of landing randomly on top of each other.
+      const existing = getNodes().filter(
+        (node) => node.type !== NodeType.INITIAL,
+      );
+      const anchor =
+        existing.find((node) => node.selected) ?? existing[existing.length - 1];
+      const preferred = anchor
+        ? { x: anchor.position.x + LAYOUT.columnGap, y: anchor.position.y }
+        : screenToFlowPosition({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+          });
+      const flowPosition = findFreePosition(existing, preferred);
+
+      // If that spot is off-screen, pan to it so the new node is visible.
+      const viewport = getViewport();
+      const screenX = flowPosition.x * viewport.zoom + viewport.x;
+      const screenY = flowPosition.y * viewport.zoom + viewport.y;
+      const margin = 120;
+      if (
+        screenX < margin ||
+        screenY < margin ||
+        screenX > window.innerWidth - margin ||
+        screenY > window.innerHeight - margin
+      ) {
+        setCenter(flowPosition.x + 20, flowPosition.y + 20, {
+          zoom: viewport.zoom,
+          duration: 300,
+        });
+      }
+
       setNodes((nodes) => {
         const hasInitialTrigger = nodes.some(
           (node) => node.type === NodeType.INITIAL,
         );
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-
-        const flowPosition = screenToFlowPosition({
-          x: centerX + (Math.random() - 0.5) * 200,
-          y: centerY + (Math.random() - 0.5) * 200,
-        });
         const newNode = {
           id: createId(),
           data: {},
@@ -206,20 +250,35 @@ export function NodeSelector({
       });
       onOpenChange(false);
     },
-    [getNodes, onOpenChange, screenToFlowPosition, setNodes],
+    [
+      getNodes,
+      getViewport,
+      onOpenChange,
+      screenToFlowPosition,
+      setCenter,
+      setNodes,
+    ],
   );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md p-0 flex flex-col"
+      >
         <div className="p-6 pb-0">
           <SheetHeader>
             <SheetTitle>Add a Node</SheetTitle>
             <SheetDescription className="text-sm">
-              <strong>Triggers</strong> start your workflow. <strong>Actions</strong> do the work.
-              <span className="hidden sm:inline"><br /></span>
-              <span className="sm:text-xs block sm:inline mt-1 sm:mt-0">Connect them by dragging from right handle → left handle.</span>
+              <strong>Triggers</strong> start your workflow.{" "}
+              <strong>Actions</strong> do the work.
+              <span className="hidden sm:inline">
+                <br />
+              </span>
+              <span className="sm:text-xs block sm:inline mt-1 sm:mt-0">
+                Connect them by dragging from right handle → left handle.
+              </span>
             </SheetDescription>
           </SheetHeader>
 
@@ -248,8 +307,12 @@ export function NodeSelector({
           {!hasResults && (
             <div className="py-12 text-center">
               <SearchIcon className="size-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No nodes found for "{searchQuery}"</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Try a different search term</p>
+              <p className="text-sm text-muted-foreground">
+                No nodes found for "{searchQuery}"
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                Try a different search term
+              </p>
             </div>
           )}
 
@@ -271,7 +334,10 @@ export function NodeSelector({
                       onClick={() => handleNodeSelect(nodeType)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleNodeSelect(nodeType);
-                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                        if (e.key === " ") {
+                          e.preventDefault();
+                          handleNodeSelect(nodeType);
+                        }
                       }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-muted dark:bg-muted/70 border border-border/50 group-hover:border-primary/65 group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors">
@@ -302,7 +368,9 @@ export function NodeSelector({
 
           {filteredExecutionNodes.length > 0 && (
             <div>
-              {filteredTriggerNodes.length > 0 && <Separator className="my-4" />}
+              {filteredTriggerNodes.length > 0 && (
+                <Separator className="my-4" />
+              )}
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
                 Actions
               </p>
@@ -319,7 +387,10 @@ export function NodeSelector({
                       onClick={() => handleNodeSelect(nodeType)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleNodeSelect(nodeType);
-                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                        if (e.key === " ") {
+                          e.preventDefault();
+                          handleNodeSelect(nodeType);
+                        }
                       }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-muted dark:bg-muted/70 border border-border/50 group-hover:border-primary/65 group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors">
@@ -350,7 +421,10 @@ export function NodeSelector({
 
           {filteredUtilityNodes.length > 0 && (
             <div>
-              {(filteredTriggerNodes.length > 0 || filteredExecutionNodes.length > 0) && <Separator className="my-4" />}
+              {(filteredTriggerNodes.length > 0 ||
+                filteredExecutionNodes.length > 0) && (
+                <Separator className="my-4" />
+              )}
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
                 Utility
               </p>
@@ -367,7 +441,10 @@ export function NodeSelector({
                       onClick={() => handleNodeSelect(nodeType)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleNodeSelect(nodeType);
-                        if (e.key === " ") { e.preventDefault(); handleNodeSelect(nodeType); }
+                        if (e.key === " ") {
+                          e.preventDefault();
+                          handleNodeSelect(nodeType);
+                        }
                       }}
                     >
                       <div className="flex items-center justify-center size-10 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 dark:group-hover:bg-amber-500/30 transition-colors">
@@ -400,7 +477,11 @@ export function NodeSelector({
         {/* Footer hint */}
         <div className="p-4 border-t bg-muted/30">
           <p className="text-xs text-muted-foreground text-center">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-mono">⇧A</kbd> to open this panel
+            Press{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-mono">
+              ⇧A
+            </kbd>{" "}
+            to open this panel
           </p>
         </div>
       </SheetContent>
