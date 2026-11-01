@@ -13,7 +13,7 @@ import { SlackNode } from "@/features/executions/components/slack/node";
 import { WhatsAppNode } from "@/features/executions/components/whatsapp/node";
 import { SelfHealingNode } from "@/features/executions/components/self-healing/node";
 import { GmailReaderNode } from "@/features/executions/components/gmail-reader/node";
-
+import { IfElseNode } from "@/features/executions/components/if-else/node";
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
   [NodeType.HTTP_REQUEST]: HttpRequestNode,
@@ -28,6 +28,7 @@ export const nodeComponents = {
   [NodeType.WHATSAPP]: WhatsAppNode,
   [NodeType.SELF_HEALING]: SelfHealingNode,
   [NodeType.GMAIL_READER]: GmailReaderNode,
+  [NodeType.IF_ELSE]: IfElseNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

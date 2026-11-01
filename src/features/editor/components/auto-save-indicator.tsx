@@ -19,6 +19,8 @@ interface AutoSaveIndicatorProps {
   status: AutoSaveStatus;
   lastSavedAt: Date | null;
   onSave?: () => void;
+  /** Plain-language reason the last save failed. */
+  errorMessage?: string | null;
   className?: string;
 }
 
@@ -26,11 +28,12 @@ export const AutoSaveIndicator = ({
   status,
   lastSavedAt,
   onSave,
+  errorMessage,
   className,
 }: AutoSaveIndicatorProps) => {
   // Track visibility - show only when saving, just saved, error, or unsaved
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
-  
+
   useEffect(() => {
     if (status === "saved") {
       setShowSavedIndicator(true);
@@ -42,11 +45,12 @@ export const AutoSaveIndicator = ({
   }, [status]);
 
   // Only show for: saving, saved (briefly), error, unsaved, offline
-  const shouldShow = status === "saving" || 
-                     (status === "saved" && showSavedIndicator) || 
-                     status === "error" || 
-                     status === "unsaved" ||
-                     status === "offline";
+  const shouldShow =
+    status === "saving" ||
+    (status === "saved" && showSavedIndicator) ||
+    status === "error" ||
+    status === "unsaved" ||
+    status === "offline";
 
   const getStatusContent = () => {
     switch (status) {
@@ -77,7 +81,9 @@ export const AutoSaveIndicator = ({
       case "error":
         return {
           icon: <AlertCircleIcon className="size-3.5" />,
-          text: "Save failed",
+          text: errorMessage?.startsWith("Can't reach")
+            ? "Can't reach database"
+            : "Couldn't save",
           variant: "destructive" as const,
           bgColor: "bg-red-500/10 border-red-500/20",
           textColor: "text-red-600 dark:text-red-400",
@@ -122,10 +128,16 @@ export const AutoSaveIndicator = ({
         textColor,
         isClickable && "cursor-pointer hover:opacity-80 active:scale-95",
         !isClickable && "cursor-default",
-        className
+        className,
       )}
       onClick={isClickable ? onSave : undefined}
-      title={isClickable ? "Click to save (Ctrl+S)" : `Status: ${text}`}
+      title={
+        status === "error" && errorMessage
+          ? `${errorMessage} Click to try again (Ctrl+S).`
+          : isClickable
+            ? "Click to save (Ctrl+S)"
+            : `Status: ${text}`
+      }
     >
       {icon}
       <span className="font-medium">{text}</span>

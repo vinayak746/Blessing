@@ -7,13 +7,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  FormInputIcon, 
-  MessageSquareIcon, 
+import {
+  FormInputIcon,
+  MessageSquareIcon,
   CreditCardIcon,
-  WebhookIcon,
   BrainIcon,
   MailIcon,
 } from "lucide-react";
@@ -48,13 +52,8 @@ const templates: Template[] = [
     icon: <CreditCardIcon className="size-5" />,
     category: "Popular",
   },
-  {
-    id: "webhook-processor",
-    name: "Webhook Data Processor",
-    description: "Process incoming webhook data with AI",
-    icon: <WebhookIcon className="size-5" />,
-    category: "Advanced",
-  },
+  // "webhook-processor" removed: it built Manual Trigger -> OpenAI, nothing
+  // to do with webhooks. Re-add it once a real Webhook trigger node exists.
 ];
 
 interface WorkflowTemplatesProps {

@@ -1,3 +1,4 @@
+import { SAVE_TRANSACTION_OPTIONS } from "@/features/workflows/server/save-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -44,7 +45,10 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute per user
 
-function checkRateLimit(userId: string): { allowed: boolean; retryAfter?: number } {
+function checkRateLimit(userId: string): {
+  allowed: boolean;
+  retryAfter?: number;
+} {
   const now = Date.now();
   const userLimit = rateLimitMap.get(userId);
 
@@ -59,7 +63,10 @@ function checkRateLimit(userId: string): { allowed: boolean; retryAfter?: number
 
   if (!userLimit || userLimit.resetTime < now) {
     // Reset or initialize
-    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    rateLimitMap.set(userId, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS,
+    });
     return { allowed: true };
   }
 
@@ -81,13 +88,15 @@ function sanitizeString(str: string): string {
   return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 }
 
-function validateNodeData(data: Record<string, unknown>): Record<string, unknown> {
+function validateNodeData(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
   // Deep clone and sanitize string values
   const sanitized: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
     const sanitizedKey = sanitizeString(key).slice(0, 256);
-    
+
     if (typeof value === "string") {
       sanitized[sanitizedKey] = sanitizeString(value).slice(0, 10000); // Limit string length
     } else if (typeof value === "number" && Number.isFinite(value)) {
@@ -99,11 +108,13 @@ function validateNodeData(data: Record<string, unknown>): Record<string, unknown
     } else if (Array.isArray(value)) {
       sanitized[sanitizedKey] = value.slice(0, 100); // Limit array length
     } else if (typeof value === "object" && value !== null) {
-      sanitized[sanitizedKey] = validateNodeData(value as Record<string, unknown>);
+      sanitized[sanitizedKey] = validateNodeData(
+        value as Record<string, unknown>,
+      );
     }
     // Skip functions, symbols, undefined, etc.
   }
-  
+
   return sanitized;
 }
 
@@ -119,10 +130,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
@@ -139,7 +147,7 @@ export async function POST(request: NextRequest) {
             "X-RateLimit-Limit": String(RATE_LIMIT_MAX_REQUESTS),
             "X-RateLimit-Remaining": "0",
           },
-        }
+        },
       );
     }
 
@@ -148,23 +156,20 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const parseResult = SaveBeaconRequestSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { 
+        {
           error: "Invalid payload",
-          details: parseResult.error.issues.map(i => ({
+          details: parseResult.error.issues.map((i) => ({
             path: i.path.join("."),
             message: i.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -179,20 +184,20 @@ export async function POST(request: NextRequest) {
     if (!workflow) {
       return NextResponse.json(
         { error: "Workflow not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // 5. Validate edge references (all sources/targets must exist in nodes)
-    const nodeIds = new Set(nodes.map(n => n.id));
+    const nodeIds = new Set(nodes.map((n) => n.id));
     const invalidEdges = edges.filter(
-      e => !nodeIds.has(e.source) || !nodeIds.has(e.target)
+      (e) => !nodeIds.has(e.source) || !nodeIds.has(e.target),
     );
-    
+
     if (invalidEdges.length > 0) {
       return NextResponse.json(
         { error: "Invalid edges: references non-existent nodes" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -237,16 +242,16 @@ export async function POST(request: NextRequest) {
         where: { id },
         data: { updatedAt: new Date() },
       });
-    });
+    }, SAVE_TRANSACTION_OPTIONS);
 
     return NextResponse.json({ success: true });
   } catch (error) {
     // Log error securely (don't expose to client)
-    console.error("Beacon save error:", error instanceof Error ? error.message : "Unknown error");
-    
-    return NextResponse.json(
-      { error: "Save failed" },
-      { status: 500 }
+    console.error(
+      "Beacon save error:",
+      error instanceof Error ? error.message : "Unknown error",
     );
+
+    return NextResponse.json({ error: "Save failed" }, { status: 500 });
   }
 }

@@ -1,449 +1,349 @@
-# Blessing - Workflow Automation Platform
+# Blessing --- Visual Workflow Automation
 
-> **A visual, no-code workflow builder powered by AI** | Create powerful automation workflows without writing a single line of code
+Blessing is a node-based workflow automation platform for connecting
+triggers, integrations, and AI-powered processing in visual workflows.
+Available functionality depends on the node implementations and
+configuration in the repository.
 
-## What is Blessing?
+## Features
 
-**Blessing** is an intelligent workflow automation platform that allows anyone to create, visualize, and execute complex automation workflows using a drag-and-drop editor. Think of it like Zapier or Make.com - but with a beautiful visual interface and AI integration built in.
+-   Visual, node-based workflow editor.
+-   Registered triggers: Manual Trigger, Google Form Trigger, and Stripe
+    Trigger.
+-   HTTP Request node for calling external HTTP APIs.
+-   AI nodes: OpenAI, Anthropic, and Gemini.
+-   Integration nodes: Discord, Slack, and WhatsApp.
+-   Gmail Reader node for reading email.
+-   If/Else conditional node.
+-   Self-Healing node.
+-   Credential management.
+-   Inngest-based execution infrastructure.
+-   Better Auth with email/password, Google OAuth, and GitHub OAuth.
+-   Polar checkout and customer-portal integration.
 
-### In Simple Terms:
+**Scope note:** The node component and executor registries do not
+include a general-purpose database-write node, a dedicated email-sending
+node, or a generic webhook trigger. Do not treat those as implemented
+workflow nodes unless the codebase is updated and verified.
 
-Imagine you could connect different apps and services together like building with LEGO blocks:
-- **Google Form** → When someone fills out your form
-- **AI Processing** → Automatically analyze and process the response with Claude, ChatGPT, or Gemini
-- **Send to Discord/Slack** → Post the result to your team's communication channel
-- **Save to Database** → Store everything for future reference
+## Technology stack
 
-BLESSING lets you do exactly that - visually, without coding!
+The dependencies in `package.json` include Next.js 15, React 19,
+TypeScript, Tailwind CSS, Radix UI, `@xyflow/react`, Jotai, TanStack
+Query, React Hook Form, tRPC, Prisma, PostgreSQL, Better Auth, Polar,
+Inngest, the Vercel AI SDK and provider packages for
+OpenAI/Anthropic/Google, Sentry, and Biome.
 
----
+A dependency being installed does not by itself prove that every feature
+of that library is implemented.
 
-## Key Features
+## Registered node types
 
-### 🎨 **Visual Workflow Editor**
-Drag and drop nodes to create workflows. See your automation flow in real-time.
+  Node type               High-level purpose
+  ----------------------- ----------------------------------------------------------
+  `INITIAL`               Initial node; currently uses the manual-trigger executor
+  `MANUAL_TRIGGER`        Start a workflow manually
+  `GOOGLE_FORM_TRIGGER`   Google Forms trigger
+  `STRIPE_TRIGGER`        Stripe trigger
+  `HTTP_REQUEST`          Make an HTTP request
+  `OPENAI`                OpenAI processing
+  `ANTHROPIC`             Anthropic processing
+  `GEMINI`                Gemini processing
+  `DISCORD`               Discord integration
+  `SLACK`                 Slack integration
+  `WHATSAPP`              WhatsApp integration
+  `GMAIL_READER`          Read email through the configured Gmail credential
+  `IF_ELSE`               Conditional branching
+  `SELF_HEALING`          Self-healing workflow node
 
-### 🤖 **AI Integration**
-Built-in support for:
-- **OpenAI** (GPT models)
-- **Anthropic Claude** (Advanced reasoning)
-- **Google Gemini** (Multimodal AI)
+Keep the component registry, executor registry, and Prisma `NodeType`
+enum consistent when adding or removing node types. Consult each node's
+implementation for required fields, inputs, outputs, limits, and error
+behavior.
 
-### 🔌 **Multiple Triggers & Actions**
-Connect workflows to various services:
-- **Triggers**: Google Forms, Stripe payments, Manual triggers, HTTP requests
-- **Actions**: Discord, Slack, HTTP requests, AI processing
-- **Easy credential management** for secure API key storage
+## Illustrative workflow examples
 
-### 💾 **Secure Credential Management**
-Encrypted storage of API keys and secrets. Your credentials stay safe.
+These combinations use registered node types but are not guarantees that
+every connection works without configuration. Set up credentials, map
+data correctly, and test each workflow.
 
-### ⚡ **Real-time Execution**
-Watched powered by **Inngest** - a reliable task queue system for running workflows
+1.  Google Form Trigger → OpenAI, Anthropic, or Gemini → Slack or
+    Discord.
+2.  Stripe Trigger → AI processing if needed → Discord or Slack.
+3.  Manual Trigger → HTTP Request → a supported downstream node.
+4.  A trigger → If/Else → separate branches using supported nodes.
 
-### 📊 **Execution History & Monitoring**
-Track every workflow run, see success/failure status, debug errors
+These examples do not imply the existence of a database-write node,
+email-sending node, generic webhook trigger, or generic "trigger another
+workflow" action.
 
-### 👤 **User Authentication**
-Secure login with **Better Auth** and OAuth support (Google, GitHub)
+## Prerequisites
 
----
+-   Node.js and npm compatible with the installed Next.js 15 project
+-   PostgreSQL
+-   Git
+-   OAuth credentials for the social sign-in providers you plan to
+    enable
+-   External provider accounts and credentials for the workflows you
+    want to test
 
-## Tech Stack
+Inngest and ngrok are used by the local multi-process development setup.
+ngrok is only needed when you require a public tunnel to your local app.
 
-### Frontend
-- **Next.js 15** - React framework with app router
-- **React 19** - Modern React features
-- **Radix UI** - Accessible, unstyled UI components
-- **TailwindCSS** - Utility-first CSS
-- **React Flow** - Interactive node-based graph editing
-- **React Hook Form** - Form state management
-- **Jotai** - Simple state management
-- **TanStack React Query** - Data fetching and caching
+## Getting started
 
-### Backend
-- **Next.js API Routes** - Serverless API endpoints
-- **tRPC** - Type-safe RPC framework
-- **PostgreSQL** - Relational database
-- **Prisma ORM** - Database access and migrations
+### 1. Clone and install
 
-### Infrastructure & Services
-- **Inngest** - Workflow task queue and scheduling
-- **Better Auth** - Authentication & authorization
-- **Vercel** - Deployment platform
-- **Sentry** - Error tracking
-
-### AI/LLM Integrations
-- **Vercel AI SDK** - Unified AI provider interface
-- OpenAI, Anthropic, Google AI SDKs
-
----
-
-## Project Structure
-
-```
-src/
-├── app/                      # Next.js app router pages
-│   ├── (auth)/              # Authentication pages
-│   ├── (dashboard)/         # Main dashboard
-│   ├── api/                 # API routes
-│   └── ...
-├── components/              # Reusable React components
-├── features/                # Feature modules (organized by domain)
-│   ├── auth/               # Authentication logic & components
-│   ├── workflows/          # Workflow CRUD operations
-│   ├── editor/             # Visual workflow editor
-│   │   ├── components/     # Editor UI components
-│   │   └── store/          # Editor state management
-│   ├── triggers/           # Trigger types & components
-│   ├── executions/         # Execution history & monitoring
-│   ├── credentials/        # API key management
-│   └── subscriptions/      # Stripe webhook handling
-├── hooks/                  # Custom React hooks
-├── lib/                    # Utility functions
-├── trpc/                   # tRPC router setup
-│   ├── routers/           # API route handlers
-│   ├── client.tsx         # Client-side tRPC setup
-│   └── init.ts            # tRPC initialization
-├── inngest/               # Inngest workflow definitions
-└── config/                # Configuration files
-
-prisma/
-└── schema.prisma          # Database schema
+``` bash
+git clone https://github.com/vinayak746/Blessing.git
+cd Blessing
+npm install
 ```
 
----
+### 2. Configure environment variables
 
-## Database Schema (Core Models)
+Create a local `.env` file in the project root. Never commit it or share
+its contents. The source code references these variables:
 
-### User
-Stores user information and authentication details.
-```prisma
-user {
-  id, name, email, emailVerified, image
-  sessions, accounts, workflows, credentials
-}
+  -----------------------------------------------------------------------
+  Variable                            Purpose
+  ----------------------------------- -----------------------------------
+  `DATABASE_URL`                      PostgreSQL connection URL used by
+                                      Prisma
+
+  `ENCRYPTION_KEY`                    Key used by `Cryptr` to encrypt and
+                                      decrypt saved credential values
+
+  `GOOGLE_CLIENT_ID`                  Google OAuth client ID
+
+  `GOOGLE_CLIENT_SECRET`              Google OAuth client secret
+
+  `GITHUB_CLIENT_ID`                  GitHub OAuth client ID
+
+  `GITHUB_CLIENT_SECRET`              GitHub OAuth client secret
+
+  `POLAR_SUCCESS_URL`                 Return URL used by Polar checkout
+
+  `QSTASH_TOKEN`                      QStash token used by the
+                                      mail-sending service
+
+  `MAILER_URL`                        Base URL for the external mailer
+                                      service
+
+  `NEWSLETTER_BASE_URL`               Newsletter service base URL; the
+                                      code has a fallback if absent
+
+  `NEXT_PUBLIC_APP_URL`               Public application URL where used
+
+  `NGROK_URL`                         URL used by the `ngrok:dev` script
+  -----------------------------------------------------------------------
+
+Some variables are feature-specific rather than necessary for every
+local run. The mail-sending service explicitly throws when
+`QSTASH_TOKEN` or `MAILER_URL` is missing when that module is
+initialized. Check the relevant code path before treating every variable
+as mandatory.
+
+Configure the Google and GitHub OAuth applications with callback URLs
+that match this application's Better Auth configuration and the URL you
+use to run it.
+
+**Protect `ENCRYPTION_KEY` and keep it stable.** Losing or changing it
+can make existing encrypted credentials impossible to decrypt. Back it
+up securely outside the repository.
+
+For workflow provider API keys such as OpenAI, Anthropic, and Gemini,
+use Blessing's credential manager where supported rather than assuming
+they belong in `.env`.
+
+### 3. Apply database migrations
+
+Ensure PostgreSQL is running and `DATABASE_URL` points to your database,
+then run:
+
+``` bash
+npx prisma migrate dev
 ```
 
-### Workflow
-Represents an automation workflow.
-```prisma
-workflow {
-  id, name, createdAt, updatedAt
-  nodes, connections, executions
-  userId (owner)
-}
-```
+The repository contains Prisma migrations. A seed configuration or seed
+implementation was not confirmed during the README audit, so this guide
+does not recommend `npx prisma db seed`.
 
-### Node
-A single action/trigger in the workflow (e.g., "Send to Discord", "Call OpenAI").
-```prisma
-node {
-  id, type (INITIAL, GOOGLE_FORM_TRIGGER, ANTHROPIC, DISCORD, etc.)
-  position (x, y coordinates)
-  data (JSON config), credentialId
-  workflowId, inputConnections, outputConnections
-}
-```
+### 4. Start the web app
 
-### Connection
-Links nodes together to form the workflow logic.
-```prisma
-connection {
-  fromNodeId, toNodeId
-  fromOutput, toInput (output socket names)
-  workflowId
-}
-```
-
-### Execution
-Records of workflow runs.
-```prisma
-execution {
-  status (RUNNING, SUCCESS, FAILED)
-  error, errorStack, output (JSON)
-  startedAt, completedAt
-  inngestEventId (references Inngest task)
-}
-```
-
-### Credential
-Encrypted API keys for third-party services.
-```prisma
-credential {
-  name, value (encrypted), type (OPENAI, ANTHROPIC, GEMINI)
-  userId
-}
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL database
-- Git
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/vinayak746/Blessing.git
-   cd Blessing
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env.local` file in the root directory:
-   ```env
-   # Database
-   DATABASE_URL="postgresql://user:password@localhost:5432/blessing"
-
-   # Authentication
-   BETTER_AUTH_URL="http://localhost:3000"
-   BETTER_AUTH_SECRET="your-secret-key"
-
-   # Google OAuth
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-
-   # AI Providers (add keys for services you want to use)
-   OPENAI_API_KEY="your-openai-key"
-   ANTHROPIC_API_KEY="your-anthropic-key"
-   GOOGLE_AI_API_KEY="your-google-ai-key"
-
-   # Inngest (workflow task queue)
-   INNGEST_EVENT_KEY="your-inngest-event-key"
-   INNGEST_SIGNING_KEY="your-inngest-signing-key"
-
-   # Stripe (for payments/webhooks)
-   STRIPE_SECRET_KEY="your-stripe-secret"
-   STRIPE_WEBHOOK_SECRET="your-webhook-secret"
-   ```
-
-4. **Set up the database**
-   ```bash
-   # Create database tables
-   npx prisma migrate dev
-
-   # (Optional) Seed with test data
-   npx prisma db seed
-   ```
-
-5. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## How It Works
-
-### 1. **Create a Workflow**
-   - Go to dashboard
-   - Click "New Workflow"
-   - Name your workflow
-
-### 2. **Design in Visual Editor**
-   - Open the workflow editor
-   - Drag nodes (triggers, actions, AI processing) onto the canvas
-   - Connect nodes by dragging from output sockets to input sockets
-   - Configure each node with specific settings
-
-### 3. **Add Credentials**
-   - For nodes that need API keys (OpenAI, Discord, etc.)
-   - Create credentials in your account settings
-   - Assign credentials to nodes
-
-### 4. **Save & Deploy**
-   - Save the workflow
-   - Activate the trigger
-   - Workflow is now live!
-
-### 5. **Monitor Execution**
-   - View execution history
-   - Check success/failure status
-   - Debug using error logs
-
----
-
-## Available Scripts
-
-```bash
-# Development with turbopack (faster builds)
+``` bash
 npm run dev
+```
 
-# Build for production
-npm run build
+Open <http://localhost:3000>.
 
-# Start production server
-npm start
+### 5. Start all local development processes (optional)
 
-# Linting with Biome
-npm run lint
+`npm run dev:all` uses `mprocs.yaml` to start Next.js, the Inngest CLI
+development server, and ngrok:
 
-# Format code
-npm run format
-
-# Run Inngest locally
-npm run inngest:dev
-
-# Run all services with mprocs (dev, ngrok, inngest)
+``` bash
 npm run dev:all
 ```
 
----
+Configure `NGROK_URL` and ngrok access first. If you only need the web
+app, use `npm run dev`.
 
-## Example Workflows You Can Build
+## Available scripts
 
-### 📝 **Automated Content Processing**
-```
-Google Form (trigger) 
-  → Claude AI (analyze & generate summary)
-  → Save to Database
-  → Post to Slack (notify team)
-```
+  -----------------------------------------------------------------------
+  Command                             Description
+  ----------------------------------- -----------------------------------
+  `npm run dev`                       Start Next.js with Turbopack
 
-### 💳 **Payment Notification System**
-```
-Stripe Payment (trigger)
-  → OpenAI (generate thank you message)
-  → Send Email
-  → Discord notification
-```
+  `npm run build`                     Generate Prisma Client and build
+                                      the app
 
-### 📊 **Data Processing Pipeline**
-```
-HTTP Webhook (trigger)
-  → Gemini AI (process data)
-  → Save to PostgreSQL
-  → Trigger another workflow
-```
+  `npm run start`                     Start the production Next.js server
 
----
+  `npm run lint`                      Run Biome checks
 
-## Key Concepts for Beginners
+  `npm run format`                    Format files with Biome
 
-### **Nodes**
-Building blocks of your workflow. Each node does one thing:
-- **Trigger Node**: Starts the workflow (Google Form submission, payment, etc.)
-- **Action Node**: Performs an action (send message, call API, etc.)
-- **AI Node**: Processes data with AI (Claude, ChatGPT, Gemini)
+  `npm run inngest:dev`               Start the Inngest CLI development
+                                      server
 
-### **Connections**
-Lines that connect nodes together. Data flows through connections.
+  `npm run ngrok:dev`                 Start ngrok using `NGROK_URL`
 
-### **Execution**
-One complete run of your workflow. Each time a trigger happens, one execution occurs.
+  `npm run dev:all`                   Start Next.js, Inngest, and ngrok
+                                      through `mprocs`
+  -----------------------------------------------------------------------
 
-### **Credentials**
-Safely store API keys. Never hardcode secrets in nodes!
+## How to use Blessing
 
----
+1.  Sign in or create an account.
+2.  Create a workflow in the editor.
+3.  Add a trigger that matches the start method you need.
+4.  Add supported processing and integration nodes.
+5.  Configure each node and provide required credentials through the
+    credential manager.
+6.  Connect nodes and configure the data passed between them.
+7.  Save and test the workflow.
+8.  Inspect execution status and available execution details when
+    troubleshooting.
 
-## Deployment
+Document exact activation, deployment, retry, and execution-history
+behavior from the relevant implementation rather than assuming it is
+identical for every trigger.
 
-The project is configured for deployment on **Vercel**:
+## Credentials and security
 
-```bash
-# Deploy automatically
-git push origin main
+The Prisma `Credential` model stores a credential's type, name,
+encrypted value, and owning user. The credential router encrypts values
+before writing them to the database. The single-credential response
+masks the value, and the list query selects non-sensitive fields.
 
-# Or deploy manually
-vercel deploy
-```
+The encryption helper initializes `Cryptr` with `ENCRYPTION_KEY`.
+Protect this key as a production secret. Access to both the database and
+encryption key may allow someone to recover stored credential values.
+This summary is not a complete security audit.
 
-**Important**: Set environment variables on Vercel dashboard before deploying.
-
----
-
-## Contributing
-
-Contributions are welcome! Here's how:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Commit (`git commit -m 'Add amazing feature'`)
-5. Push (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
-
----
+Never commit `.env` files, API keys, OAuth secrets, encryption keys, or
+database dumps.
 
 ## Troubleshooting
 
-### Database Connection Error
-```
-Check your DATABASE_URL in .env.local
-Ensure PostgreSQL is running
-```
+### Database connection or migration errors
 
-### API Keys Not Working
-```
-Verify API keys in your Credentials page
-Ensure they have proper permissions
-Check Execution history for detailed error messages
-```
+-   Confirm PostgreSQL is running.
+-   Check that `DATABASE_URL` points to the intended database.
+-   Run `npx prisma migrate dev` and inspect the full error output.
 
-### Workflows Not Triggering
-```
-Ensure Inngest is running (npm run inngest:dev)
-Check that trigger credentials are configured
-Verify webhook URLs are correct
-```
+### OAuth sign-in errors
 
----
+-   Verify the provider's client ID and secret.
+-   Check that the configured OAuth callback URL matches the application
+    URL and Better Auth setup.
 
-## License
+### Credential decryption errors
 
-This project is open source and available under the MIT License.
+-   Confirm `ENCRYPTION_KEY` is set.
+-   Ensure the same key used to encrypt existing credentials is
+    available.
+-   Do not change the key without a migration plan for existing values.
 
----
+### Inngest or ngrok errors
 
-## Support
+-   Run `npm run inngest:dev` or `npm run ngrok:dev` individually to
+    isolate the issue.
+-   Check the relevant CLI configuration and `NGROK_URL`.
 
-For questions or issues:
-- Open an issue on GitHub
-- Check existing issues for solutions
-- Review the documentation
+### An integration node fails
 
----
+-   Check the node's required credential and configuration fields.
+-   Verify provider permissions, API limits, and expected input/output
+    formats.
+-   Review execution logs.
+
+## Project structure
+
+Important areas include:
+
+-   `src/config/` --- application configuration, including the node
+    component registry
+-   `src/features/auth/` --- authentication UI
+-   `src/features/credentials/` --- credential management
+-   `src/features/executions/` --- node implementations and executors
+-   `src/features/triggers/` --- trigger implementations
+-   `src/lib/` --- shared utilities, database client, authentication,
+    and encryption
+-   `prisma/schema.prisma` --- Prisma data model
+-   `prisma/migrations/` --- database migrations
+-   `mprocs.yaml` --- local multi-process development configuration
+
+Consult the repository for the complete current directory layout.
+
+## Deployment notes
+
+Before deploying:
+
+-   Configure a production PostgreSQL database and apply migrations
+    using your deployment process.
+-   Set environment variables required by the features you enable.
+-   Store secrets in the hosting provider's secret manager.
+-   Configure production OAuth callback URLs.
+-   Protect and securely back up `ENCRYPTION_KEY`.
+-   Configure Inngest and external services required by the triggers and
+    integrations you use.
+-   Verify the production build and test representative workflows.
+
+The project includes Vercel-related dependencies, but deployment
+behavior depends on the hosting configuration. A Git push triggers
+deployment only if an appropriate deployment integration is configured.
 
 ## Roadmap
 
-- [ ] More trigger types (email, webhooks, schedules)
-- [ ] Additional AI providers
-- [ ] Workflow templates library
-- [ ] Advanced error handling & retries
-- [ ] Workflow versioning
-- [ ] Team collaboration features
-- [ ] Mobile app
+Keep the roadmap aligned with the issue tracker or an explicitly
+maintained plan. Clearly label planned capabilities and do not describe
+them as available today. Keep planned items separate from the
+implemented node catalogue.
 
----
+## Contributing
 
-## Author
+1.  Explain the issue or improvement.
+2.  Keep the component registry, executor registry, and Prisma
+    `NodeType` enum consistent when changing node types.
+3.  Update node documentation and workflow examples.
+4.  Add or update tests where appropriate.
+5.  Run the project's lint, build, and relevant test checks.
 
-**Vinayak Arora** - [@vinayak746](https://github.com/vinayak746)
+Do not include credentials, tokens, database dumps, or other secrets in
+issues or pull requests.
 
----
+## License
 
-## Learn More
+The previous README identified the project as MIT. Confirm that the
+repository contains the corresponding `LICENSE` file before relying on
+that statement for redistribution.
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [tRPC Documentation](https://trpc.io)
-- [React Flow](https://reactflow.dev)
-- [Inngest](https://www.inngest.com)
-- [Vercel AI SDK](https://sdk.vercel.ai)
+## Support and links
+
+-   Repository: <https://github.com/vinayak746/Blessing>
+
+Use the repository's issue tracker for bug reports and feature requests
+if it is enabled.

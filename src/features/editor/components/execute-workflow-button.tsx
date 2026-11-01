@@ -10,16 +10,27 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { useExecuteWorkflow } from "@/features/workflows/hooks/use-workflows";
-import { FlaskConicalIcon, XCircle, Lightbulb, AlertTriangle, Loader2Icon } from "lucide-react";
+import {
+  FlaskConicalIcon,
+  XCircle,
+  Lightbulb,
+  AlertTriangle,
+  Loader2Icon,
+} from "lucide-react";
 import type { ValidationIssue } from "../hooks/use-workflow-validation";
 
 interface ExecuteWorkflowButtonProps {
   workflowId: string;
   canExecute?: boolean;
   validationErrors?: ValidationIssue[];
-  onSaveBeforeExecute?: () => void;
-  hasUnsavedChanges?: boolean;
+  /**
+   * Must resolve `true` once the latest changes are stored on the server
+   * (`false` if they could not be saved). The run is cancelled on `false`, so
+   * it can never execute an older version of the workflow than the one on screen.
+   */
+  onSaveBeforeExecute?: () => Promise<boolean>;
 }
 
 export const ExecuteWorkflowButton = ({
@@ -27,7 +38,6 @@ export const ExecuteWorkflowButton = ({
   canExecute = true,
   validationErrors = [],
   onSaveBeforeExecute,
-  hasUnsavedChanges = false,
 }: ExecuteWorkflowButtonProps) => {
   const executeWorkflow = useExecuteWorkflow();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -38,22 +48,29 @@ export const ExecuteWorkflowButton = ({
       setShowErrorDialog(true);
       return;
     }
-    
-    // Save first if there are unsaved changes
-    if (hasUnsavedChanges && onSaveBeforeExecute) {
+
+    // Make sure the server has exactly what is on screen before running it.
+    // This waits for the save to finish (no fixed sleep) and is instant when
+    // nothing has changed.
+    if (onSaveBeforeExecute) {
       setIsSavingBeforeExecute(true);
-      
+      let saved = false;
       try {
-        onSaveBeforeExecute();
-        // Give a small delay for save to process
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (error) {
+        saved = await onSaveBeforeExecute();
+      } catch {
+        saved = false;
+      } finally {
         setIsSavingBeforeExecute(false);
+      }
+
+      if (!saved) {
+        toast.error(
+          "Your latest changes couldn't be saved, so the workflow was not run. Check your connection and try again.",
+        );
         return;
       }
-      setIsSavingBeforeExecute(false);
     }
-    
+
     executeWorkflow.mutate({ id: workflowId });
   };
 
@@ -74,14 +91,18 @@ export const ExecuteWorkflowButton = ({
           <FlaskConicalIcon className="size-4" />
         )}
         <span className="hidden sm:inline">
-          {isSavingBeforeExecute 
-            ? "Saving..." 
-            : canExecute 
-              ? "Execute Workflow" 
+          {isSavingBeforeExecute
+            ? "Saving..."
+            : canExecute
+              ? "Execute Workflow"
               : "Cannot Run - Fix Issues"}
         </span>
         <span className="sm:hidden">
-          {isSavingBeforeExecute ? "Saving..." : canExecute ? "Run" : "Fix Issues"}
+          {isSavingBeforeExecute
+            ? "Saving..."
+            : canExecute
+              ? "Run"
+              : "Fix Issues"}
         </span>
       </Button>
 
@@ -94,8 +115,8 @@ export const ExecuteWorkflowButton = ({
               <DialogTitle>Workflow Can&apos;t Run Yet</DialogTitle>
             </div>
             <DialogDescription>
-              Your workflow has some issues that need to be fixed before it can run.
-              Don&apos;t worry - here&apos;s what you need to do:
+              Your workflow has some issues that need to be fixed before it can
+              run. Don&apos;t worry - here&apos;s what you need to do:
             </DialogDescription>
           </DialogHeader>
 
@@ -108,7 +129,9 @@ export const ExecuteWorkflowButton = ({
                 <div className="flex items-start gap-2">
                   <XCircle className="size-4 text-red-500 mt-0.5 shrink-0" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">{error.message}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {error.message}
+                    </p>
                     {error.hint && (
                       <p className="text-xs flex items-start gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-muted/60 text-muted-foreground border border-border">
                         <Lightbulb className="size-3 mt-0.5 shrink-0 text-primary" />

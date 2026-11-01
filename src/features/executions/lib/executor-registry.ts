@@ -12,7 +12,7 @@ import { slackExecutor } from "../components/slack/executor";
 import { whatsappExecutor } from "../components/whatsapp/executor";
 import { selfHealingExecutor } from "../components/self-healing/executor";
 import { gmailReaderExecutor } from "../components/gmail-reader/executor";
-
+import { ifElseExecutor } from "../components/if-else/executor";
 export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.MANUAL_TRIGGER]: manualTriggerExecutor,
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -23,10 +23,11 @@ export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.ANTHROPIC]: anthropicExecutor,
   [NodeType.OPENAI]: openAiExecutor,
   [NodeType.DISCORD]: discordExecutor,
-  [NodeType.SLACK]: slackExecutor, 
+  [NodeType.SLACK]: slackExecutor,
   [NodeType.WHATSAPP]: whatsappExecutor,
   [NodeType.SELF_HEALING]: selfHealingExecutor,
   [NodeType.GMAIL_READER]: gmailReaderExecutor,
+  [NodeType.IF_ELSE]: ifElseExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor => {

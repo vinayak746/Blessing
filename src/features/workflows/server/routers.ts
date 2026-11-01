@@ -7,6 +7,11 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
+import {
+  SAVE_TRANSACTION_OPTIONS,
+  findInvalidNode,
+  INVALID_NODE_MESSAGE,
+} from "./save-helpers";
 import z from "zod";
 import { PAGINATION } from "@/config/constants";
 import { NodeType } from "@prisma/client";
@@ -48,30 +53,22 @@ const workflowTemplates = {
     ],
     connections: [{ fromIndex: 0, toIndex: 1 }],
   },
-  "webhook-processor": {
-    name: "Webhook Processor",
-    nodes: [
-      { type: NodeType.MANUAL_TRIGGER, position: { x: 0, y: 0 } },
-      { type: NodeType.OPENAI, position: { x: 300, y: 0 } },
-    ],
-    connections: [{ fromIndex: 0, toIndex: 1 }],
-  },
+  // "webhook-processor" removed: it built Manual Trigger -> OpenAI, nothing
+  // to do with webhooks. Re-add it once a real Webhook trigger node exists.
 } as const;
 
 type TemplateId = keyof typeof workflowTemplates;
 
 export const workflowsRouter = createTRPCRouter({
-  
   execute: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: input.id, userId: ctx.auth.user.id },
-        
       });
       await sendWorkflowExecution({
         workflowId: input.id,
-      })
+      });
       return workflow;
     }),
 
@@ -80,7 +77,7 @@ export const workflowsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const templateId = (input?.templateId || "blank") as TemplateId;
       const template = workflowTemplates[templateId] || workflowTemplates.blank;
-      
+
       // Create the workflow
       const workflow = await prisma.workflow.create({
         data: {
@@ -138,7 +135,7 @@ export const workflowsRouter = createTRPCRouter({
             type: z.string().nullish(),
             position: z.object({ x: z.number(), y: z.number() }),
             data: z.record(z.string(), z.any()).optional(),
-          })
+          }),
         ),
         edges: z.array(
           z.object({
@@ -146,12 +143,19 @@ export const workflowsRouter = createTRPCRouter({
             target: z.string(),
             sourceHandle: z.string().nullish(),
             targetHandle: z.string().nullish(),
-          })
+          }),
         ),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, nodes, edges } = input;
+
+      if (findInvalidNode(nodes)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: INVALID_NODE_MESSAGE,
+        });
+      }
 
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id, userId: ctx.auth.user.id },
@@ -177,22 +181,22 @@ export const workflowsRouter = createTRPCRouter({
         });
         // Create new connections
         await tx.connection.createMany({
-            data: edges.map((edge)=>({
-                workflowId: id,
-                fromNodeId: edge.source,
-                toNodeId: edge.target,
-                fromOutput: edge.sourceHandle || "main",
-                toInput: edge.targetHandle || "main",
-            })),
+          data: edges.map((edge) => ({
+            workflowId: id,
+            fromNodeId: edge.source,
+            toNodeId: edge.target,
+            fromOutput: edge.sourceHandle || "main",
+            toInput: edge.targetHandle || "main",
+          })),
         });
-        
+
         // Upate workflow's updatedAt timestamp
         await tx.workflow.update({
-            where: {id},
-            data: {updatedAt: new Date()},
+          where: { id },
+          data: { updatedAt: new Date() },
         });
         return workflow;
-      });
+      }, SAVE_TRANSACTION_OPTIONS);
     }),
   updateName: protectedProcedure
     .input(z.object({ id: z.string(), name: z.string().min(1) }))
@@ -256,7 +260,7 @@ export const workflowsRouter = createTRPCRouter({
           .max(PAGINATION.MAX_PAGE_SIZE)
           .default(PAGINATION.DEFAULT_PAGE_SIZE),
         search: z.string().default(""),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search } = input;
